@@ -1248,6 +1248,103 @@ const STYLE = `
     .production-row { flex-direction: column; align-items: flex-start; }
     .production-animal { min-width: unset; }
   }
+
+  /* ── Market Income Section ── */
+  .income-hero {
+    background: linear-gradient(135deg, var(--moss) 0%, var(--bark) 100%);
+    border-radius: 12px;
+    padding: 20px 22px;
+    color: var(--white);
+    margin-bottom: 18px;
+  }
+  .income-hero-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 4px;
+  }
+  .income-hero-total {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--sun);
+    line-height: 1.1;
+  }
+  .income-hero-sublabel {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .income-hero-splits {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    flex-wrap: wrap;
+  }
+  .income-hero-split { flex: 1; min-width: 100px; }
+  .income-hero-split-label { font-size: 11px; opacity: 0.65; text-transform: uppercase; letter-spacing: 1px; }
+  .income-hero-split-value { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--leaf); font-weight: 700; margin-top: 2px; }
+  .income-subsection {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--bark);
+    margin: 16px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .income-subsection::after { content: ''; flex: 1; height: 1px; background: var(--straw); }
+  .income-table { display: flex; flex-direction: column; gap: 8px; }
+  .income-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    padding: 11px 13px;
+    background: var(--white);
+    border: 1px solid rgba(90,61,46,0.1);
+    border-radius: 9px;
+    align-items: start;
+  }
+  .income-row-left {}
+  .income-row-name {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--soil);
+    margin-bottom: 2px;
+  }
+  .income-row-detail { font-size: 11px; color: var(--bark); line-height: 1.5; }
+  .income-row-note { font-size: 11px; color: var(--bark); font-style: italic; margin-top: 3px; }
+  .income-row-min { font-size: 11px; color: var(--rust); margin-top: 3px; }
+  .income-row-right { text-align: right; flex-shrink: 0; }
+  .income-row-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--moss);
+    white-space: nowrap;
+  }
+  .income-row-period { font-size: 10px; color: var(--bark); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .income-legal {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #fef9ec;
+    border: 1px solid var(--straw);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--bark);
+    line-height: 1.6;
+  }
+  .income-legal strong { color: var(--soil); }
 `;
 
 // ============= DATABASE =============
@@ -1267,7 +1364,7 @@ const ANIMALS = [
     suggestedMin: 3, suggestedMax: 12,
     setupPerUnit: 80, annualPerUnit: 60,
     outputPerUnit: "~5 eggs/week",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Hobby / recreation","Animal therapy / pets","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Hobby / recreation","Animal therapy / pets","Sell fresh meat & veg"],
     regenerative: [
       "Use a chicken tractor — a movable coop that lets hens fertilize and till one garden bed at a time, then rotate to the next.",
       "Run hens through garden beds at season's end to eat pest larvae, weed seeds, and old plants while leaving fertility behind.",
@@ -1289,7 +1386,7 @@ const ANIMALS = [
     suggestedMin: 3, suggestedMax: 10,
     setupPerUnit: 100, annualPerUnit: 75,
     outputPerUnit: "~4-5 large eggs/week",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Integrate ducks into orchards — they eat fallen fruit, slugs, and codling moth larvae without damaging trees.",
       "Use duck pond water to fertigate the garden — nitrogen-rich water doubles as irrigation and feed for plants.",
@@ -1311,7 +1408,7 @@ const ANIMALS = [
     suggestedMin: 8, suggestedMax: 30,
     setupPerUnit: 12, annualPerUnit: 10,
     outputPerUnit: "~6 eggs/week (1 chicken egg = 4 quail eggs)",
-    goals: ["Self-sufficiency","Hobby / recreation","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Hobby / recreation","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Stack quail cages above worm bins — droppings feed the worms, and worm castings supercharge garden beds.",
       "Use quail manure (extremely concentrated) diluted 1:20 with water as a powerful liquid fertilizer for tomatoes and peppers.",
@@ -1333,7 +1430,7 @@ const ANIMALS = [
     suggestedMin: 1, suggestedMax: 4,
     setupPerUnit: 700, annualPerUnit: 150,
     outputPerUnit: "30-60 lbs honey/year",
-    goals: ["Self-sufficiency","Sustainability","Hobby / recreation","Sell produce"],
+    goals: ["Self-sufficiency","Sustainability","Hobby / recreation","Sell fresh meat & veg"],
     regenerative: [
       "Plant a year-round bee forage corridor — ensure something is blooming every month from early spring to late fall.",
       "Skip chemical mite treatments where possible — use screened bottom boards, drone trapping, and breed for hygienic behavior.",
@@ -1355,7 +1452,7 @@ const ANIMALS = [
     suggestedMin: 1, suggestedMax: 4,
     setupPerUnit: 250, annualPerUnit: 200,
     outputPerUnit: "~180 lbs meat/year per trio",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Apply rabbit manure directly to garden beds — it's 'cold' and won't burn plants, unlike chicken or cow manure.",
       "Build a rabbit-tractor (colony pasture) system — let rabbits graze rotating sections of weedy ground.",
@@ -1377,7 +1474,7 @@ const ANIMALS = [
     suggestedMin: 2, suggestedMax: 6,
     setupPerUnit: 700, annualPerUnit: 400,
     outputPerUnit: "~1-3 quarts milk/day during lactation",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Use goats for targeted brush clearing — they eat blackberry, poison ivy, and invasives that mowers and herbicides can't touch.",
       "Implement rotational browsing — move them every 3-7 days to prevent overgrazing and let plants regrow stronger.",
@@ -1399,7 +1496,7 @@ const ANIMALS = [
     suggestedMin: 3, suggestedMax: 10,
     setupPerUnit: 500, annualPerUnit: 200,
     outputPerUnit: "~7-10 lbs wool + 50 lbs meat/year",
-    goals: ["Self-sufficiency","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Practice mob grazing — high stocking density for short periods, then long rest. Builds topsoil and sequesters carbon.",
       "Run sheep through orchards or vineyards in the off-season — they mow, fertilize, and eat fallen fruit that harbors disease.",
@@ -1421,7 +1518,7 @@ const ANIMALS = [
     suggestedMin: 2, suggestedMax: 6,
     setupPerUnit: 400, annualPerUnit: 350,
     outputPerUnit: "120-180 lbs pork/pig at slaughter",
-    goals: ["Self-sufficiency","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Use pigs as living tillers — let them root up new garden beds, then plant directly. No tractor or tiller needed.",
       "Practice silvopasture in oak or chestnut groves — pigs gain weight on free mast (acorns, nuts) for months.",
@@ -1443,7 +1540,7 @@ const ANIMALS = [
     suggestedMin: 1, suggestedMax: 3,
     setupPerUnit: 4000, annualPerUnit: 2000,
     outputPerUnit: "3-6 gallons milk/day during lactation",
-    goals: ["Self-sufficiency","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Adopt adaptive multi-paddock (AMP) grazing — moves cows daily across small paddocks to mimic wild herd patterns and rebuild soil.",
       "Use the cow as a soil-building machine — rotational grazing on diverse pasture sequesters more carbon than a forest, acre for acre.",
@@ -1465,7 +1562,7 @@ const ANIMALS = [
     suggestedMin: 1, suggestedMax: 4,
     setupPerUnit: 2500, annualPerUnit: 1500,
     outputPerUnit: "400-500 lbs beef per steer at 18-24 months",
-    goals: ["Self-sufficiency","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Use mob grazing to mimic wild bison herds — high density for 1 day, then 60+ days rest. Builds topsoil rapidly.",
       "Skip the feedlot finish — grass-finished beef is healthier and supports pasture-based ecosystems.",
@@ -1487,7 +1584,7 @@ const ANIMALS = [
     suggestedMin: 4, suggestedMax: 12,
     setupPerUnit: 80, annualPerUnit: 60,
     outputPerUnit: "18-25 lb dressed bird per turkey",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Run heritage turkeys through orchards to eat fallen fruit and pest insects — natural pest control plus free forage.",
       "Save breeding stock from your healthiest birds — heritage breeds reproduce naturally, unlike industrial broad-breasted whites.",
@@ -1508,7 +1605,7 @@ const ANIMALS = [
     suggestedMin: 2, suggestedMax: 8,
     setupPerUnit: 120, annualPerUnit: 50,
     outputPerUnit: "20-40 large eggs/year + 8-15 lb meat",
-    goals: ["Self-sufficiency","Family food security","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Use geese for weed control in orchards and vineyards — they eat grass and weeds but ignore woody plants like vines and trees.",
       "Geese self-incubate and raise their goslings — no incubator or brooder needed, fully closed-loop reproduction.",
@@ -1529,7 +1626,7 @@ const ANIMALS = [
     suggestedMin: 6, suggestedMax: 20,
     setupPerUnit: 25, annualPerUnit: 15,
     outputPerUnit: "60-100 eggs/year (seasonal layer)",
-    goals: ["Self-sufficiency","Sustainability","Sell produce"],
+    goals: ["Self-sufficiency","Sustainability","Sell fresh meat & veg"],
     regenerative: [
       "Use guineas instead of pesticides for tick control — they devour ticks, beetles, and grasshoppers without scratching gardens.",
       "Allow guineas to free-range across the entire property — they patrol for pests and require minimal supplemental feed.",
@@ -1550,7 +1647,7 @@ const ANIMALS = [
     suggestedMin: 10, suggestedMax: 50,
     setupPerUnit: 12, annualPerUnit: 18,
     outputPerUnit: "5-6 lb dressed bird in 8 weeks",
-    goals: ["Self-sufficiency","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Use Joel Salatin-style chicken tractors that move daily across pasture — fertilizes evenly without overloading any single spot.",
       "Consider slower-growing heritage broilers (Freedom Rangers, Red Rangers) for better flavor, hardier birds, and pastured systems.",
@@ -1571,7 +1668,7 @@ const ANIMALS = [
     suggestedMin: 3, suggestedMax: 8,
     setupPerUnit: 1500, annualPerUnit: 350,
     outputPerUnit: "5-10 lbs fleece/year (worth $50-200/lb)",
-    goals: ["Sustainability","Hobby / recreation","Sell produce"],
+    goals: ["Sustainability","Hobby / recreation","Sell fresh meat & veg"],
     regenerative: [
       "Alpaca manure (called 'beans') is a low-odor, slow-release fertilizer that can be applied directly to gardens without composting.",
       "Their soft padded feet (vs. hooves) cause minimal pasture damage — ideal for sensitive soil systems.",
@@ -1655,7 +1752,7 @@ const ANIMALS = [
     suggestedMin: 6, suggestedMax: 20,
     setupPerUnit: 25, annualPerUnit: 25,
     outputPerUnit: "6-8 lb duck in 7-9 weeks",
-    goals: ["Self-sufficiency","Family food security","Sell produce"],
+    goals: ["Self-sufficiency","Family food security","Sell fresh meat & veg"],
     regenerative: [
       "Run pekin ducks on irrigation ditches and seasonal wetlands — they thrive where chickens can't and need no special housing.",
       "Use Muscovy ducks instead of Pekin for fly control — they consume up to 100 flies per minute.",
@@ -1751,6 +1848,54 @@ const ANIMAL_PRODUCTION_LOOKUP = {
   "Donkey (mini or standard)": { type: "service",
     getWeekly: () => "Predator protection",
     note: "Guards up to 25 head of livestock" },
+};
+
+// Market income data for animals. annualUnits(count) → sellable units/year.
+const ANIMAL_MARKET = {
+  "Chickens (laying hens)":     { product:"Farm-fresh eggs",        priceMin:4,   priceMax:7,   priceUnit:"doz",        annualUnits:(n)=>Math.round(n*260/12), unitsLabel:"doz/yr", minToSell:6,  period:"per year", note:"Roadside stand or farmers market. Pullet eggs sell out fast in spring." },
+  "Ducks":                      { product:"Duck eggs (premium)",     priceMin:7,   priceMax:12,  priceUnit:"doz",        annualUnits:(n)=>Math.round(n*234/12), unitsLabel:"doz/yr", minToSell:6,  period:"per year", note:"Duck eggs command 2× chicken egg price. Bakers pay premium." },
+  "Quail (Coturnix)":           { product:"Quail eggs",             priceMin:3,   priceMax:5,   priceUnit:"doz",        annualUnits:(n)=>Math.round(n*312/12), unitsLabel:"doz/yr", minToSell:12, period:"per year", note:"Sell to Asian grocers and upscale restaurants for best margin." },
+  "Honeybees":                  { product:"Raw local honey",         priceMin:8,   priceMax:18,  priceUnit:"lb",         annualUnits:(n)=>Math.round(n*45),     unitsLabel:"lbs/yr", minToSell:2,  period:"per year", note:"Add beeswax candles and lip balm for higher margins at market." },
+  "Meat Rabbits":               { product:"Rabbit (processed)",      priceMin:8,   priceMax:14,  priceUnit:"lb",         annualUnits:(n)=>Math.round(n*170),    unitsLabel:"lbs/yr", minToSell:1,  period:"per year", note:"Sell to restaurants and farmers markets. High margins for niche meat." },
+  "Dairy Goats":                { product:"Fresh goat milk",         priceMin:8,   priceMax:15,  priceUnit:"qt",         annualUnits:(n)=>Math.round(n*560),    unitsLabel:"qts/yr", minToSell:2,  period:"per year", note:"Raw milk sales vary by state — herdshare agreements are legal in most." },
+  "Sheep":                      { product:"Wool + lamb",             priceMin:2,   priceMax:5,   priceUnit:"lb wool",    annualUnits:(n)=>Math.round(n*8.5),    unitsLabel:"lbs wool/yr", minToSell:3, period:"per year", note:"Processed roving or yarn earns $25-50/lb. Lambs add $400-600/head." },
+  "Pigs (heritage breed)":      { product:"Pastured pork",           priceMin:8,   priceMax:15,  priceUnit:"lb (HW)",    annualUnits:(n)=>Math.round(n*150),    unitsLabel:"lbs/pig", minToSell:1, period:"per pig",  note:"Sell half/whole hogs direct-to-consumer. Simplest path to cash flow." },
+  "Dairy Cow":                  { product:"Fresh whole milk",        priceMin:8,   priceMax:15,  priceUnit:"gal",        annualUnits:(n)=>Math.round(n*1260),   unitsLabel:"gals/yr", minToSell:1, period:"per year", note:"Herdshare model works in most states. Value-add as butter or cheese." },
+  "Beef Cattle":                { product:"Grass-fed beef",          priceMin:8,   priceMax:16,  priceUnit:"lb (HW)",    annualUnits:(n)=>Math.round(n*450),    unitsLabel:"lbs/steer", minToSell:1, period:"per steer", note:"Sell quarter/half/whole beeves direct. Grass-fed commands 2-3× commodity." },
+  "Turkeys (heritage)":         { product:"Heritage turkey",         priceMin:6,   priceMax:12,  priceUnit:"lb dressed", annualUnits:(n)=>Math.round(n*21.5),   unitsLabel:"lbs/bird", minToSell:4, period:"per bird", note:"Pre-orders for Thanksgiving bring $150-300/bird. Start taking deposits in summer." },
+  "Geese":                      { product:"Goose eggs + meat",       priceMin:2,   priceMax:4,   priceUnit:"egg",        annualUnits:(n)=>Math.round(n*30),     unitsLabel:"eggs/yr", minToSell:4, period:"per year", note:"Goose meat commands premium at Christmas. Eggs sell to bakers for $3-5 each." },
+  "Guinea Fowl":                { product:"Guinea eggs + meat",      priceMin:1,   priceMax:2,   priceUnit:"egg",        annualUnits:(n)=>Math.round(n*80),     unitsLabel:"eggs/yr", minToSell:8, period:"per year", note:"Live tick-control birds sell for $15-30 each — often more profitable." },
+  "Meat Chickens (Cornish Cross)":{ product:"Pastured broiler",      priceMin:4,   priceMax:8,   priceUnit:"lb dressed", annualUnits:(n)=>Math.round(n*5.5),    unitsLabel:"lbs/bird", minToSell:25, period:"per batch", note:"Run 4-5 batches/year. Sell $18-40/bird at farmers market or pre-order." },
+  "Alpacas":                    { product:"Raw alpaca fiber",        priceMin:50,  priceMax:150, priceUnit:"lb",         annualUnits:(n)=>Math.round(n*7.5),    unitsLabel:"lbs/yr", minToSell:3, period:"per year", note:"Handspinners pay premium for raw or processed fiber. Sell on Etsy & at fiber festivals." },
+  "Llamas":                     { product:"Llama fiber",             priceMin:15,  priceMax:30,  priceUnit:"lb",         annualUnits:(n)=>Math.round(n*5),      unitsLabel:"lbs/yr", minToSell:2, period:"per year", note:"Coarser than alpaca but still sought by hand-spinners. Also rent as pack animals." },
+  "Worm Bin (composting)":      { product:"Worm castings",           priceMin:2,   priceMax:5,   priceUnit:"lb",         annualUnits:(n)=>Math.round(n*30),     unitsLabel:"lbs/yr", minToSell:2, period:"per year", note:"Sell to gardeners, grow shops, and nurseries. Low overhead, steady local demand." },
+  "Ducks (meat — Pekin)":       { product:"Duck meat (Pekin)",       priceMin:5,   priceMax:9,   priceUnit:"lb dressed", annualUnits:(n)=>Math.round(n*7),      unitsLabel:"lbs/bird", minToSell:10, period:"per batch", note:"Strong demand at Asian markets and upscale restaurants. 3-4 batches/year." },
+};
+
+// Market income data for vegetables. Annual income is for a "standard homestead planting" of that crop.
+const VEG_MARKET = {
+  "Tomatoes":                    { priceMin:2.50, priceMax:4.50, priceUnit:"/lb",    basis:"per 6-plant bed",              annualIncomeLow:150, annualIncomeHigh:810,  note:"Heirloom & cherry varieties command $4-6/lb" },
+  "Zucchini & Summer Squash":    { priceMin:1.50, priceMax:2.50, priceUnit:"/lb",    basis:"per 3 plants",                 annualIncomeLow:90,  annualIncomeHigh:300,  note:"Sell baby zucchini to restaurants at $3-4/lb" },
+  "Lettuce & Salad Greens":      { priceMin:4,    priceMax:8,    priceUnit:"/lb",    basis:"per 32 sq ft, multi-harvest",  annualIncomeLow:80,  annualIncomeHigh:250,  note:"Mesclun mix bags sell for $6-12 at market" },
+  "Beans (bush & pole)":         { priceMin:2,    priceMax:4,    priceUnit:"/lb",    basis:"per 20-plant row",             annualIncomeLow:30,  annualIncomeHigh:160,  note:"Dry beans store well; sell at $3-5/lb" },
+  "Garlic":                      { priceMin:6,    priceMax:14,   priceUnit:"/lb",    basis:"per 50-head bed",              annualIncomeLow:120, annualIncomeHigh:500,  note:"Hardneck varieties premium; scapes also sell well in spring" },
+  "Potatoes":                    { priceMin:1.50, priceMax:3.50, priceUnit:"/lb",    basis:"per 10-ft row",                annualIncomeLow:60,  annualIncomeHigh:210,  note:"Fingerlings & colored varieties command $3-5/lb" },
+  "Sweet Corn":                  { priceMin:0.50, priceMax:1.50, priceUnit:"/ear",   basis:"per 100-stalk patch",          annualIncomeLow:100, annualIncomeHigh:450,  note:"Sell fresh by the dozen or as bundled bags" },
+  "Cucumbers":                   { priceMin:1,    priceMax:2.50, priceUnit:"/lb",    basis:"per 6 plants",                 annualIncomeLow:60,  annualIncomeHigh:250,  note:"Pickling cucumbers sell to restaurants at premium" },
+  "Peppers":                     { priceMin:2,    priceMax:5,    priceUnit:"/lb",    basis:"per 8 plants",                 annualIncomeLow:80,  annualIncomeHigh:480,  note:"Hot & specialty varieties command $4-8/lb" },
+  "Kale & Chard":                { priceMin:3,    priceMax:6,    priceUnit:"/lb",    basis:"per 10 plants",                annualIncomeLow:90,  annualIncomeHigh:400,  note:"Cut-and-come-again for months of harvests" },
+  "Winter Squash":               { priceMin:1,    priceMax:3,    priceUnit:"/lb",    basis:"per 4 plants",                 annualIncomeLow:80,  annualIncomeHigh:360,  note:"Stores well — sell fall through spring" },
+  "Pumpkins":                    { priceMin:4,    priceMax:15,   priceUnit:"/each",  basis:"per 4 plants",                 annualIncomeLow:48,  annualIncomeHigh:480,  note:"Decorative varieties earn $10-25 at fall farm stands" },
+  "Strawberries":                { priceMin:4,    priceMax:8,    priceUnit:"/lb",    basis:"per 25-plant bed",             annualIncomeLow:100, annualIncomeHigh:400,  note:"U-pick pricing at $3-5/lb reduces harvest labor" },
+  "Raspberries & Blackberries":  { priceMin:5,    priceMax:10,   priceUnit:"/pint",  basis:"per 8 canes",                  annualIncomeLow:80,  annualIncomeHigh:320,  note:"Highest $/sq ft of any fruit at farmers markets" },
+  "Blueberries":                 { priceMin:4,    priceMax:8,    priceUnit:"/lb",    basis:"per 4 mature bushes",          annualIncomeLow:64,  annualIncomeHigh:320,  note:"U-pick premium; takes 3-4 years to full production" },
+  "Asparagus":                   { priceMin:4,    priceMax:8,    priceUnit:"/lb",    basis:"per 25-crown bed (mature)",    annualIncomeLow:50,  annualIncomeHigh:200,  note:"Perennial — pays off for 20+ years once established" },
+  "Herbs (culinary mix)":        { priceMin:3,    priceMax:6,    priceUnit:"/bunch", basis:"per 4 sq ft, multi-harvest",   annualIncomeLow:120, annualIncomeHigh:600,  note:"Best $/sq ft of any crop — bundle into $5-8 herb bouquets" },
+  "Lavender":                    { priceMin:4,    priceMax:10,   priceUnit:"/bunch", basis:"per 10 plants",                annualIncomeLow:160, annualIncomeHigh:800,  note:"Dried bundles, sachets, essential oil — multiple revenue streams" },
+  "Sunflowers":                  { priceMin:1.50, priceMax:4,    priceUnit:"/stem",  basis:"per 50-plant row",             annualIncomeLow:75,  annualIncomeHigh:400,  note:"Cut flower add-on stream — pairs well with veggie CSA shares" },
+  "Medicinal Herbs":             { priceMin:5,    priceMax:15,   priceUnit:"/oz dry",basis:"per 20 sq ft bed",             annualIncomeLow:200, annualIncomeHigh:900,  note:"Echinacea, elderberry, valerian — high-value niche market" },
+  "Cabbage & Brassicas":         { priceMin:1.50, priceMax:4,    priceUnit:"/head",  basis:"per 12 plants",                annualIncomeLow:36,  annualIncomeHigh:192,  note:"Fermented as kraut or kimchi adds significant value-add margin" },
+  "Onions":                      { priceMin:1,    priceMax:2.50, priceUnit:"/lb",    basis:"per 100-plant bed",            annualIncomeLow:50,  annualIncomeHigh:250,  note:"Long storage — sell through winter when supply is scarce" },
 };
 
 // Vegetables with seasonal planting windows.
@@ -2442,7 +2587,7 @@ function generatePlan(form) {
 
 // ============= UI =============
 
-const GOALS = ["Self-sufficiency", "Sell produce", "Hobby / recreation", "Family food security", "Sustainability", "Animal therapy / pets"];
+const GOALS = ["Self-sufficiency", "Sell fresh meat & veg", "Hobby / recreation", "Family food security", "Sustainability", "Animal therapy / pets"];
 const EXPERIENCE = ["Complete beginner", "Some experience", "Intermediate", "Expert"];
 const LAND_UNITS = ["acres", "sq ft", "sq meters", "hectares"];
 const CLIMATES = ["Tropical", "Subtropical", "Mediterranean", "Temperate", "Continental", "Arid/Desert", "Semi-arid", "Alpine/Mountain", "Not sure"];
@@ -3003,6 +3148,134 @@ function PlantingCalendar({ calendar, climateProfile }) {
   );
 }
 
+function MarketIncomeSection({ animals, animalCounts, vegetables }) {
+  // Animal rows — only those with count > 0 and a market entry
+  const animalRows = animals
+    .map(a => {
+      const count = animalCounts[a.name] || 0;
+      if (!count) return null;
+      const m = ANIMAL_MARKET[a.name];
+      if (!m) return null;
+      const units = m.annualUnits(count);
+      return {
+        a, count, m, units,
+        incLow:  Math.round(units * m.priceMin),
+        incHigh: Math.round(units * m.priceMax),
+      };
+    })
+    .filter(Boolean);
+
+  // Vegetable rows — every recommended veg that has a market entry
+  const vegRows = vegetables
+    .map(v => {
+      const m = VEG_MARKET[v.name];
+      if (!m) return null;
+      return { v, m };
+    })
+    .filter(Boolean);
+
+  if (animalRows.length === 0 && vegRows.length === 0) return null;
+
+  const animalTotalLow  = animalRows.reduce((s, r) => s + r.incLow,  0);
+  const animalTotalHigh = animalRows.reduce((s, r) => s + r.incHigh, 0);
+  const vegTotalLow     = vegRows.reduce((s, r) => s + r.m.annualIncomeLow,  0);
+  const vegTotalHigh    = vegRows.reduce((s, r) => s + r.m.annualIncomeHigh, 0);
+  const grandLow  = animalTotalLow  + vegTotalLow;
+  const grandHigh = animalTotalHigh + vegTotalHigh;
+
+  const fmt = (n) => n >= 1000 ? `$${(n/1000).toFixed(1)}k` : `$${n}`;
+
+  return (
+    <div className="card">
+      <div className="section-label">
+        <div className="section-label-icon">💵</div>
+        Market Income Potential
+      </div>
+
+      {/* Summary hero */}
+      <div className="income-hero">
+        <div className="income-hero-title">Estimated Annual Revenue</div>
+        <div className="income-hero-total">{fmt(grandLow)} – {fmt(grandHigh)}</div>
+        <div className="income-hero-sublabel">based on current animal counts + one standard planting of each crop</div>
+        <div className="income-hero-splits">
+          {animalRows.length > 0 && (
+            <div className="income-hero-split">
+              <div className="income-hero-split-label">🐓 Animals</div>
+              <div className="income-hero-split-value">{fmt(animalTotalLow)} – {fmt(animalTotalHigh)}</div>
+            </div>
+          )}
+          {vegRows.length > 0 && (
+            <div className="income-hero-split">
+              <div className="income-hero-split-label">🥕 Plants</div>
+              <div className="income-hero-split-value">{fmt(vegTotalLow)} – {fmt(vegTotalHigh)}</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Animals */}
+      {animalRows.length > 0 && (
+        <>
+          <div className="income-subsection">🐓 By Animal Breed</div>
+          <div className="income-table">
+            {animalRows.map(({ a, count, m, units, incLow, incHigh }) => (
+              <div className="income-row" key={a.name}>
+                <div className="income-row-left">
+                  <div className="income-row-name">
+                    <span>{a.emoji}</span> {a.name}
+                  </div>
+                  <div className="income-row-detail">
+                    {count} {count === 1 ? a.unitName : a.unitNamePlural} · {m.product} · {m.priceMin === m.priceMax ? `$${m.priceMin}` : `$${m.priceMin}–$${m.priceMax}`}/{m.priceUnit}
+                  </div>
+                  <div className="income-row-detail">{units.toLocaleString()} {m.unitsLabel} projected</div>
+                  {count < m.minToSell && (
+                    <div className="income-row-min">⚠ Suggest {m.minToSell}+ {a.unitNamePlural || a.name} for reliable surplus to sell</div>
+                  )}
+                  <div className="income-row-note">{m.note}</div>
+                </div>
+                <div className="income-row-right">
+                  <div className="income-row-value">{fmt(incLow)} – {fmt(incHigh)}</div>
+                  <div className="income-row-period">{m.period}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Vegetables */}
+      {vegRows.length > 0 && (
+        <>
+          <div className="income-subsection">🥕 By Crop</div>
+          <div className="income-table">
+            {vegRows.map(({ v, m }) => (
+              <div className="income-row" key={v.name}>
+                <div className="income-row-left">
+                  <div className="income-row-name">
+                    <span>{v.emoji}</span> {v.name}
+                  </div>
+                  <div className="income-row-detail">
+                    {m.basis} · {m.priceMin === m.priceMax ? `$${m.priceMin}` : `$${m.priceMin}–$${m.priceMax}`}{m.priceUnit}
+                  </div>
+                  <div className="income-row-note">{m.note}</div>
+                </div>
+                <div className="income-row-right">
+                  <div className="income-row-value">{fmt(m.annualIncomeLow)} – {fmt(m.annualIncomeHigh)}</div>
+                  <div className="income-row-period">per season</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="income-legal">
+        <strong>⚖️ Legal note:</strong> Raw milk sales, meat processing, and direct food sales are regulated differently in every state. Check your state's cottage food laws and USDA/FSIS rules before selling. Farmers market permits typically cost $25-150/year and are required in most states.
+      </div>
+    </div>
+  );
+}
+
 function WeeklyProductionSummary({ animals, animalCounts }) {
   const BADGE_LABEL = { weekly: "per week", annual: "per year", batch: "per batch", service: "service" };
   const rows = animals
@@ -3499,6 +3772,14 @@ function HomesteadPlanner() {
                   📚 Browse all {plan.fullVegetableCatalog?.length || 41} plants
                 </button>
               </div>
+            )}
+
+            {form.goals.includes("Sell fresh meat & veg") && (
+              <MarketIncomeSection
+                animals={[...(plan.animals || []), ...extraAnimals]}
+                animalCounts={animalCounts}
+                vegetables={[...(plan.vegetables || []), ...extraVegetables]}
+              />
             )}
 
             {plan.calendar && plan.calendar.length > 0 && (
