@@ -1188,6 +1188,66 @@ const STYLE = `
     color: var(--bark);
     margin-top: 6px;
   }
+
+  /* ── Weekly Production Summary ── */
+  .production-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .production-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1px solid rgba(90,61,46,0.12);
+    border-radius: 10px;
+  }
+  .production-animal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 170px;
+    flex-shrink: 0;
+  }
+  .production-emoji { font-size: 26px; line-height: 1; }
+  .production-name { font-weight: 700; font-size: 13px; color: var(--soil); }
+  .production-count { font-size: 11px; color: var(--bark); margin-top: 2px; }
+  .production-output { flex: 1; }
+  .production-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--moss);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .production-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .production-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .production-badge-weekly  { background: #d4f0d8; color: #2a6b3a; }
+  .production-badge-batch   { background: #fde8d4; color: #7a3a10; }
+  .production-badge-annual  { background: #e8e4f8; color: #4a3a8a; }
+  .production-badge-service { background: #d4e8f4; color: #1a5a7a; }
+  .production-label-text { font-size: 11px; color: var(--bark); }
+  @media (max-width: 520px) {
+    .production-row { flex-direction: column; align-items: flex-start; }
+    .production-animal { min-width: unset; }
+  }
 `;
 
 // ============= DATABASE =============
@@ -1624,6 +1684,74 @@ const ANIMALS = [
     ],
   },
 ];
+
+// Weekly/batch production specs keyed by animal name.
+// type "weekly"  → getWeekly(count) returns per-week output string
+// type "annual"  → getWeekly(count) returns per-year total
+// type "batch"   → getWeekly(count) returns per-slaughter/per-batch yield
+// type "service" → non-food output
+const ANIMAL_PRODUCTION_LOOKUP = {
+  "Chickens (laying hens)": { type: "weekly",
+    getWeekly: (n) => `${n * 4}–${n * 5} eggs`,
+    note: "~4–5 eggs/hen/week" },
+  "Ducks": { type: "weekly",
+    getWeekly: (n) => `${n * 4}–${n * 5} large eggs`,
+    note: "~4–5 eggs/duck/week" },
+  "Quail (Coturnix)": { type: "weekly",
+    getWeekly: (n) => `${n * 5}–${n * 6} quail eggs`,
+    note: "~5–6 eggs/quail/week" },
+  "Honeybees": { type: "annual",
+    getWeekly: (n) => `${Math.round(n*30/52*10)/10}–${Math.round(n*60/52*10)/10} lbs honey`,
+    note: "30–60 lbs/hive/year" },
+  "Meat Rabbits": { type: "annual",
+    getWeekly: (n) => `~${Math.round(n*175/52*10)/10} lbs meat`,
+    note: "~180 lbs/year per trio" },
+  "Dairy Goats": { type: "weekly",
+    getWeekly: (n) => `${n * 7}–${n * 21} qts milk`,
+    note: "1–3 qts/doe/day (lactating)" },
+  "Sheep": { type: "annual",
+    getWeekly: (n) => `${n * 7}–${n * 10} lbs wool`,
+    note: "7–10 lbs wool/sheep at shearing" },
+  "Pigs (heritage breed)": { type: "batch",
+    getWeekly: (n) => `${n * 120}–${n * 180} lbs pork`,
+    note: "per pig at slaughter" },
+  "Dairy Cow": { type: "weekly",
+    getWeekly: (n) => `${n * 21}–${n * 42} gal milk`,
+    note: "3–6 gal/cow/day (lactating)" },
+  "Beef Cattle": { type: "batch",
+    getWeekly: (n) => `${n * 400}–${n * 500} lbs beef`,
+    note: "per steer at 18–24 months" },
+  "Turkeys (heritage)": { type: "batch",
+    getWeekly: (n) => `${n * 18}–${n * 25} lbs meat`,
+    note: "per turkey at slaughter (6–7 months)" },
+  "Geese": { type: "annual",
+    getWeekly: (n) => `${Math.round(n*20/52*10)/10}–${Math.round(n*40/52*10)/10} large eggs`,
+    note: "20–40 eggs/year, seasonal layer" },
+  "Guinea Fowl": { type: "annual",
+    getWeekly: (n) => `${Math.round(n*60/52*10)/10}–${Math.round(n*100/52*10)/10} eggs`,
+    note: "60–100 eggs/year, seasonal" },
+  "Meat Chickens (Cornish Cross)": { type: "batch",
+    getWeekly: (n) => `${n * 5}–${n * 6} lbs meat`,
+    note: "per bird per batch, ready in 8 weeks" },
+  "Alpacas": { type: "annual",
+    getWeekly: (n) => `${n * 5}–${n * 10} lbs fleece`,
+    note: "5–10 lbs/alpaca at annual shearing" },
+  "Llamas": { type: "annual",
+    getWeekly: (n) => `${n * 3}–${n * 7} lbs fleece`,
+    note: "3–7 lbs/llama at annual shearing" },
+  "Worm Bin (composting)": { type: "weekly",
+    getWeekly: (n) => `${Math.round(n*20/52*10)/10}–${Math.round(n*40/52*10)/10} lbs castings`,
+    note: "20–40 lbs/bin/year" },
+  "Mason Bees": { type: "service",
+    getWeekly: () => "Pollination service",
+    note: "~1,500 flowers/day/bee — boosts fruit & veggie yields 20–50%" },
+  "Ducks (meat — Pekin)": { type: "batch",
+    getWeekly: (n) => `${n * 6}–${n * 8} lbs meat`,
+    note: "per duck at slaughter (7–9 weeks)" },
+  "Donkey (mini or standard)": { type: "service",
+    getWeekly: () => "Predator protection",
+    note: "Guards up to 25 head of livestock" },
+};
 
 // Vegetables with seasonal planting windows.
 // plantMonths/harvestMonths use Northern Hemisphere months (1=Jan, 12=Dec).
@@ -2875,6 +3003,55 @@ function PlantingCalendar({ calendar, climateProfile }) {
   );
 }
 
+function WeeklyProductionSummary({ animals, animalCounts }) {
+  const BADGE_LABEL = { weekly: "per week", annual: "per year", batch: "per batch", service: "service" };
+  const rows = animals
+    .map(animal => {
+      const count = animalCounts[animal.name] || 0;
+      if (count === 0) return null;
+      const spec = ANIMAL_PRODUCTION_LOOKUP[animal.name];
+      if (!spec) return null;
+      return { animal, count, spec };
+    })
+    .filter(Boolean);
+  if (rows.length === 0) return null;
+  return (
+    <div className="card">
+      <div className="section-label">
+        <div className="section-label-icon">📊</div>
+        Weekly Production Estimate
+      </div>
+      <p style={{ fontSize: 13, color: "var(--bark)", marginBottom: 16, lineHeight: 1.6 }}>
+        Based on your current animal counts. Egg-layers and dairy show <em>weekly</em> output; meat animals show <em>per-batch</em> yield; fiber and seasonal animals show <em>annual</em> totals.
+      </p>
+      <div className="production-table">
+        {rows.map(({ animal, count, spec }) => (
+          <div className="production-row" key={animal.name}>
+            <div className="production-animal">
+              <span className="production-emoji">{animal.emoji}</span>
+              <div>
+                <div className="production-name">{animal.name}</div>
+                <div className="production-count">
+                  {count} {count === 1 ? (animal.unitName || "animal") : (animal.unitNamePlural || "animals")}
+                </div>
+              </div>
+            </div>
+            <div className="production-output">
+              <div className="production-value">{spec.getWeekly(count)}</div>
+              <div className="production-note">
+                <span className={`production-badge production-badge-${spec.type}`}>
+                  {BADGE_LABEL[spec.type]}
+                </span>
+                <span className="production-label-text">{spec.note}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function HomesteadPlanner() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
@@ -3257,6 +3434,13 @@ function HomesteadPlanner() {
                   📚 Browse all 21 animals
                 </button>
               </div>
+            )}
+
+            {((plan.animals && plan.animals.length > 0) || extraAnimals.length > 0) && (
+              <WeeklyProductionSummary
+                animals={[...plan.animals, ...extraAnimals]}
+                animalCounts={animalCounts}
+              />
             )}
 
             {((plan.vegetables && plan.vegetables.length > 0) || extraVegetables.length > 0) && (
