@@ -1798,3 +1798,378 @@
   .be-inputs { max-width: 100%; padding: 16px 16px 24px; }
   .be-results { width: 100%; position: static; padding: 0 16px 48px; }
 }
+
+/* ===== ANIMAL CARE CALENDAR ===== */
+.acc-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 57px);
+}
+.acc-sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  padding: 22px 14px 40px 18px;
+  position: sticky;
+  top: 57px;
+  max-height: calc(100vh - 57px);
+  overflow-y: auto;
+  border-right: 1px solid rgba(92,61,46,0.09);
+}
+.acc-sidebar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--soil);
+  margin-bottom: 2px;
+}
+.acc-sidebar-sub {
+  font-size: 11px;
+  color: var(--bark);
+  font-weight: 300;
+  margin-bottom: 14px;
+}
+.acc-animal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.acc-animal-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.13);
+  border-radius: 10px;
+  padding: 8px 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Lato', sans-serif;
+}
+.acc-animal-btn:hover { border-color: var(--sage); }
+.acc-animal-btn--on { font-weight: 700; }
+.acc-animal-emoji { font-size: 18px; flex-shrink: 0; }
+.acc-animal-name { font-size: 13px; color: var(--soil); }
+
+.acc-main {
+  flex: 1;
+  min-width: 0;
+  padding: 22px 22px 80px;
+}
+.acc-month-nav {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.acc-month-pill {
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.12);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bark);
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.13s;
+}
+.acc-month-pill:hover { border-color: var(--sage); color: var(--soil); }
+.acc-month-pill--active {
+  background: var(--moss);
+  border-color: var(--moss);
+  color: var(--cream);
+}
+.acc-month-pill--today {
+  border-color: var(--sun);
+  color: var(--soil);
+}
+.acc-month-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--soil);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.acc-this-month-tag {
+  font-family: 'Lato', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: rgba(232,184,75,0.18);
+  color: #7a5c1e;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.acc-empty {
+  text-align: center;
+  padding: 64px 20px;
+}
+.acc-empty-icon { font-size: 48px; margin-bottom: 16px; }
+.acc-empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--soil);
+  margin-bottom: 8px;
+}
+.acc-empty-sub { font-size: 14px; color: var(--bark); font-weight: 300; }
+
+.acc-cards { display: grid; gap: 14px; }
+
+.acc-card {
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.10);
+  border-left: 4px solid var(--sage);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.acc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px 11px;
+  border-bottom: 1px solid rgba(92,61,46,0.07);
+}
+.acc-card-emoji { font-size: 20px; }
+.acc-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--soil);
+  flex: 1;
+}
+.acc-card-count {
+  font-size: 11px;
+  color: var(--bark);
+  font-weight: 300;
+}
+.acc-task {
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(92,61,46,0.055);
+}
+.acc-task:last-child { border-bottom: none; }
+.acc-task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.acc-task-text {
+  font-size: 13px;
+  color: var(--bark);
+  line-height: 1.55;
+  font-weight: 300;
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .acc-shell { flex-direction: column; }
+  .acc-sidebar {
+    width: 100%;
+    position: static;
+    padding: 16px 16px 8px;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid rgba(92,61,46,0.09);
+  }
+  .acc-animal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .acc-main { padding: 16px 16px 60px; }
+  .acc-month-pill { padding: 5px 9px; font-size: 11px; }
+}
+
+/* ===== ANIMAL CARE CALENDAR ===== */
+.acc-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 57px);
+}
+.acc-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  padding: 24px 12px 40px 20px;
+  position: sticky;
+  top: 57px;
+  max-height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+.acc-sidebar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--soil);
+  margin-bottom: 2px;
+}
+.acc-sidebar-sub {
+  font-size: 11px;
+  color: var(--bark);
+  font-weight: 300;
+  margin-bottom: 14px;
+}
+.acc-animal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.acc-animal-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.13);
+  border-radius: 10px;
+  padding: 8px 11px;
+  cursor: pointer;
+  transition: all 0.14s;
+  font-family: 'Lato', sans-serif;
+}
+.acc-animal-btn:hover:not(.acc-animal-btn--on) {
+  border-color: var(--sage);
+  background: var(--cream);
+}
+.acc-animal-btn--on { font-weight: 700; }
+.acc-animal-emoji { font-size: 18px; flex-shrink: 0; }
+.acc-animal-name { font-size: 12px; color: var(--soil); }
+
+.acc-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 22px 80px;
+}
+.acc-month-nav {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.acc-month-pill {
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.12);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bark);
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.13s;
+}
+.acc-month-pill:hover { border-color: var(--sage); color: var(--soil); }
+.acc-month-pill--active {
+  background: var(--moss);
+  border-color: var(--moss);
+  color: var(--cream);
+}
+.acc-month-pill--today {
+  border-color: var(--sun);
+  color: var(--soil);
+}
+.acc-month-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--soil);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.acc-this-month-tag {
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: rgba(232,184,75,0.18);
+  color: #8a6d30;
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+
+.acc-empty {
+  text-align: center;
+  padding: 64px 20px;
+}
+.acc-empty-icon { font-size: 52px; margin-bottom: 16px; }
+.acc-empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--soil);
+  margin-bottom: 8px;
+}
+.acc-empty-sub {
+  font-size: 14px;
+  color: var(--bark);
+  font-weight: 300;
+}
+
+.acc-cards { display: grid; gap: 14px; }
+.acc-card {
+  background: var(--white);
+  border: 1.5px solid rgba(92,61,46,0.10);
+  border-left: 4px solid var(--sage);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.acc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px 11px;
+  border-bottom: 1px solid rgba(92,61,46,0.07);
+}
+.acc-card-emoji { font-size: 22px; }
+.acc-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--soil);
+  flex: 1;
+}
+.acc-card-count {
+  font-size: 11px;
+  color: var(--bark);
+  font-weight: 300;
+}
+.acc-task {
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(92,61,46,0.06);
+}
+.acc-task:last-child { border-bottom: none; }
+.acc-task-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.acc-task-text {
+  font-size: 13px;
+  color: var(--bark);
+  line-height: 1.55;
+  font-weight: 300;
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .acc-shell { flex-direction: column; }
+  .acc-sidebar {
+    width: 100%;
+    position: static;
+    padding: 16px 16px 8px;
+    max-height: none;
+    overflow-y: visible;
+  }
+  .acc-animal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .acc-main { padding: 16px 16px 60px; }
+  .acc-month-nav { gap: 4px; }
+  .acc-month-pill { padding: 4px 10px; font-size: 11px; }
+}

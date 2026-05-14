@@ -2938,12 +2938,581 @@ function BreakEvenCalculator() {
   );
 }
 
+// ============= ANIMAL CARE CALENDAR =============
+
+const ACC_TASK_TYPES = {
+  health:      { icon: "🩺", label: "Health",      color: "#b5451b", bg: "rgba(181,69,27,0.08)"   },
+  feeding:     { icon: "🌾", label: "Feeding",     color: "#7a5c1e", bg: "rgba(200,169,110,0.15)"  },
+  breeding:    { icon: "💕", label: "Breeding",    color: "#6a3e78", bg: "rgba(122,74,110,0.09)"   },
+  maintenance: { icon: "🔧", label: "Maintenance", color: "#3d2b1f", bg: "rgba(92,61,46,0.08)"     },
+  seasonal:    { icon: "🌡️", label: "Seasonal",   color: "#1e6a8e", bg: "rgba(46,110,142,0.08)"   },
+  grooming:    { icon: "✂️", label: "Grooming",    color: "#3a5e2a", bg: "rgba(74,94,58,0.09)"     },
+};
+
+const ACC_MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ACC_MONTH_SHORT  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const tH = t => ({ type: "health",      text: t });
+const tF = t => ({ type: "feeding",     text: t });
+const tB = t => ({ type: "breeding",    text: t });
+const tM = t => ({ type: "maintenance", text: t });
+const tS = t => ({ type: "seasonal",    text: t });
+const tG = t => ({ type: "grooming",    text: t });
+
+const ACC_ANIMALS = [
+  {
+    id: "chickens", name: "Chickens", emoji: "🐓", accent: "#e8b84b",
+    months: [
+      [tF("Increase feed ~10% — hens burn more calories staying warm in cold"), tM("Check water heaters daily; frozen water stops laying fast"), tS("Run 14–16 hrs of artificial light to maintain winter egg production")],
+      [tH("Inspect combs for frostbite; apply petroleum jelly as prevention"), tB("Order spring chicks now — hatcheries fill up by March"), tM("Deep-clean and disinfect coop while flock is at its smallest")],
+      [tB("Set up brooder before chicks arrive: 95°F week 1, drop 5°F each week"), tH("First lice and mite check of the year; treat if found"), tF("New chicks need 20–22% protein chick starter, not layer pellets")],
+      [tM("Spring coop cleaning: replace all bedding, scrub surfaces, check hardware cloth"), tH("Check for worms; inspect birds for external parasites"), tF("Transition flock to pasture gradually to avoid digestive upset")],
+      [tH("Check for bumblefoot (swollen, scabbed pads) while handling birds"), tF("Peak laying = peak nutrition — quality layer pellets available at all times"), tS("Set up shade and extra waterers before summer heat arrives")],
+      [tS("Provide shade, ventilation, and cold water — heat stress kills layers"), tF("Reduce scratch grain in summer; it generates body heat"), tH("Watch for panting, drooping wings, pale combs — signs of heat stroke")],
+      [tS("Freeze fruit and veggie treats as cooling snacks; keep water icy cold"), tH("Red mites thrive in heat — treat coops at dusk when mites are active"), tM("Maximize coop ventilation; open vents and add fans if needed")],
+      [tH("Molt season begins — reduced laying is normal, not illness"), tF("Add extra protein (mealworms, gamebird feed) to support feather regrowth"), tM("Repair and paint coop while weather is dry before fall rains")],
+      [tB("Evaluate flock: cull non-layers before winter feed costs mount"), tM("Weatherize coop: seal drafts, check roof, start deep litter method"), tF("Reintroduce scratch grains to help build fat reserves before cold")],
+      [tS("Restart supplemental lighting — 14 hrs/day to prevent winter egg drop"), tM("Add 6–8 inches of bedding for composting warmth through winter"), tH("Watch for respiratory illness as damp autumn weather sets in")],
+      [tF("Warm oatmeal mash on cold mornings boosts calories and morale"), tH("Annual internal parasite check before winter — fecal float test"), tM("Insulate water founts; switch to heated base when temps drop below freezing")],
+      [tM("Maintain deep bedding; ensure ventilation — moisture causes more harm than cold"), tF("High-energy treats like sunflower seeds help hens stay warm overnight"), tS("Plan next year's flock: breeds, replacements, and hatchery orders")],
+    ]
+  },
+  {
+    id: "ducks", name: "Ducks", emoji: "🦆", accent: "#7ab8d4",
+    months: [
+      [tM("Ensure water is unfrozen daily — ducks must dunk bills to clear sinuses"), tS("Provide wind-blocking shelter; ducks tolerate cold better than chickens"), tF("Increase layer pellets slightly for cold-weather energy maintenance")],
+      [tB("Ducks often begin laying in February — provide low ground-level nesting boxes"), tH("Check bills and feet for frostbite in extreme cold"), tM("Collect eggs frequently; they lay early morning and eggs freeze quickly")],
+      [tB("Incubate duck eggs at 99.5°F, 55–65% humidity for 28 days"), tF("Ducklings can swim supervised from day 1 — don't leave unattended"), tM("Clean pond or kiddie pool weekly; ducks foul water very quickly")],
+      [tH("First parasite check of season; ducks are generally hardy but check for lice"), tM("Spring-clean duck house; rake and compost soiled bedding"), tF("Transition to pasture — ducks are excellent foragers and natural slug hunters")],
+      [tF("Supplement niacin via brewer's yeast if feeding chicken feed — ducks need 3× the niacin"), tB("Set hatching eggs if breeding a second clutch"), tS("Install shade over swimming area before summer heat arrives")],
+      [tS("Ducks handle heat well with access to swimming water — keep pool fresh daily"), tH("Watch for Angel Wing in ducklings: caused by excess protein; switch to 15–16% feed"), tM("Maintain clean swimming water to prevent bacterial bloom in summer heat")],
+      [tS("Keep pool clean and cool — ducks regulate temperature through water"), tF("Fresh garden greens and slugs are a welcome and nutritious summer treat"), tH("Check for bumblefoot if ducks are kept on hard or rough ground")],
+      [tH("Late summer molt — reduced egg production is entirely normal"), tM("Drain and deep-clean pond or pool thoroughly; algae peaks in summer heat"), tB("Evaluate breeding stock; note best layers and temperament for next year")],
+      [tM("Repair and weatherize duck house before fall rains"), tF("Restore full layer ration as molt ends and laying resumes"), tH("Deworm if on a rotation program; fecal check recommended this time of year")],
+      [tF("Increase calories as temps drop; ducks forage outside more than chickens"), tM("Prepare heated water station; ducks need liquid water access year-round"), tB("Evaluate and finalize flock size before winter feeding costs rise")],
+      [tS("Ducks can and will forage in snow — let them choose outdoor time themselves"), tM("Add extra bedding in shelter for warmth; ducks don't perch so floor warmth matters"), tH("Monitor feet in freezing mud — foot rot is a real risk in wet winter conditions")],
+      [tM("Daily water management is critical — unfrozen access required every day"), tF("High-energy feed supplement in extreme cold keeps weight and egg production up"), tS("Ducks love playing in first snow — healthy activity; ensure shelter is dry afterward")],
+    ]
+  },
+  {
+    id: "rabbits", name: "Rabbits", emoji: "🐰", accent: "#c8a96e",
+    months: [
+      [tM("Check water twice daily — bottles freeze before bowls; use crocks in winter"), tS("Add generous nesting material; rabbits stay warmer than expected but comfort matters"), tH("Watch for snuffles (respiratory illness) in cold, damp conditions — nasal discharge is a red flag")],
+      [tB("Begin breeding for March litters; doe gestation is 28–31 days"), tM("Prepare nest boxes: fill with hay 3 days before expected kindle date"), tH("Pre-breeding health check: weight, teeth alignment, reproductive condition")],
+      [tB("First litters born; check kits daily but minimize handling for first 7–10 days"), tH("Watch for mastitis in does; check nipples for heat, swelling, or hardness"), tM("Keep nest box clean; remove soiled bedding carefully without disturbing kits")],
+      [tB("Wean kits at 4–6 weeks onto pellets and hay; separate by sex at 8 weeks"), tH("Spring health check: teeth, weight, coat condition, eye clarity"), tF("Transition does back to breeding ration after weaning is complete")],
+      [tB("Peak breeding season; healthy does can kindle every 35–42 days"), tS("Monitor temperatures — rabbits begin to stress above 85°F"), tM("Clean and sanitize all hutches as mud season dries up")],
+      [tS("HEAT IS CRITICAL — rabbits die rapidly above 104°F core temperature"), tM("Place frozen 2-liter bottles in cages for cooling; move hutches to shade immediately"), tF("Reduce pellets slightly in heat; increase hay and fresh leafy greens")],
+      [tS("Suspend breeding — heat stress causes high kit mortality and doe distress"), tM("Multiple frozen bottles, fans, and misters — check animals every few hours on hot days"), tH("Purple or flushed ear veins signal overheating; cool with damp towel immediately")],
+      [tS("Continue heat protocols as needed through late summer"), tB("Resume light breeding as evenings cool in late August"), tH("Post-summer health check; weight loss from heat stress is common — supplement if thin")],
+      [tB("Fall breeding — excellent conception rates as temperatures cool"), tM("Transition hutches back to full sun exposure for natural warmth"), tH("Check for ear mites (dark waxy debris); deworm if on a rotation schedule")],
+      [tB("Strong fall litters; good weather for kit survival and growth"), tM("Prepare winter hutch insulation; block prevailing wind while maintaining ventilation"), tF("Increase pellet ration slightly as cold arrives to support body condition")],
+      [tB("Late breeding — ensure kits are born before deep cold sets in"), tM("Nest boxes back in full time; increase hay depth for insulation"), tH("Check for sore hocks on wire floors; add resting boards or mats where needed")],
+      [tM("Reliable water supply is the #1 winter priority — check bottles multiple times daily"), tF("Extra pellets and generous hay for warmth; cold rabbits need significantly more calories"), tH("Year-end health review; record breeding performance and plan any culls or additions")],
+    ]
+  },
+  {
+    id: "goats", name: "Goats", emoji: "🐐", accent: "#9dc183",
+    months: [
+      [tB("Peak kidding if fall-bred — kids need colostrum within 1 hour of birth"), tF("Increase grain for late-pregnant and lactating does — 1 lb/day per head of milk produced"), tH("Watch for pregnancy toxemia (ketosis) in heavy does approaching their due date")],
+      [tB("Kidding continues; keep area dry and draft-free — hypothermia kills newborns fast"), tH("CDT booster for does 4 weeks before kidding; kids need CDT at 4 and 8 weeks"), tM("Fresh, dry bedding is critical — wet kidding areas spread scours and infection")],
+      [tH("Vaccinate kids: CDT at 4 weeks, booster at 8 weeks"), tG("Disbud kids at 3–7 days old; delayed disbudding causes scurs and is harder on kids"), tF("Transition herd to spring pasture slowly — rapid lush grass change causes bloat")],
+      [tH("FAMACHA scoring for barber pole worm — check eyelid color; treat at score 3 or below"), tM("Hoof trimming — overgrown hooves cause lameness on wet spring ground"), tF("Monitor for grass tetany on lush pasture; supplement magnesium if needed")],
+      [tH("Parasite pressure peaks — rotate pastures every 7–10 days; FAMACHA weekly"), tF("Peak milk production — support with quality hay, kelp, and loose minerals free-choice"), tM("Goats excel at brush and weed clearing — rotate them through overgrown areas")],
+      [tG("Shear Angora or Cashmere goats before summer if not done in spring"), tH("Watch for pinkeye — spreads fast via flies; isolate affected animals immediately"), tS("Provide shade and fresh water; goats are more heat-sensitive than they appear")],
+      [tS("Spring kids are at weaning age — adjust doe rations down as milk demand drops"), tH("Summer FAMACHA checks every 2 weeks; barber pole worm pressure peaks in heat and humidity"), tM("Trim feet again if hooves have grown fast on wet or lush ground")],
+      [tB("Bucks come into rut — separate from does unless breeding; bucks become smelly and aggressive"), tF("Flush does before breeding: increase grain 2 weeks before buck introduction for better conception"), tH("Pre-breeding health check; treat parasite issues before does are bred")],
+      [tB("Breeding season — mark does when bred; gestation is 145–155 days"), tH("Annual CDT booster for whole herd if not done in spring"), tM("Calculate hay needs for winter: 30–50 lbs per goat per month is a typical estimate")],
+      [tB("Confirm pregnancies via ultrasound or observe for repeat heats 21 days after breeding"), tF("Early pregnancy = maintenance ration; late pregnancy = begin increasing grain"), tM("Hoof trimming before winter — clean hooves are far less prone to foot rot")],
+      [tF("Late pregnancy nutrition: increase grain for does in their last 6 weeks of gestation"), tH("Watch for urinary calculi in wethers — maintain 2:1 calcium-to-phosphorus ratio in feed"), tM("Prepare and clean kidding area: insulated, bright, close to the house for easy night checks")],
+      [tF("Final pre-kidding nutrition push; selenium/vitamin E injection if in a deficient region"), tH("Gather kidding supplies: iodine, feeding tube, clean towels, heat lamp, colostrum backup"), tB("Know your due dates; check does every 4 hours as dates approach; night checks are worth it")],
+    ]
+  },
+  {
+    id: "pigs", name: "Pigs", emoji: "🐷", accent: "#f4a0a0",
+    months: [
+      [tM("Deep straw or hay bedding is essential — pigs burrow and build nests for warmth"), tF("Increase feed 10–15% in cold; pigs burn significant calories just staying warm"), tH("Check for frostbitten ears; shelter must be draft-free but not completely airtight")],
+      [tB("Prepare farrowing area if sows are due — heat lamp, creep space, anti-crush rail"), tH("Check piglet birth weights; small pigs need supplemental feeding to survive"), tM("Farrowing area: 70–75°F for sow, 85–90°F for piglets under heat lamp")],
+      [tB("Wean piglets at 6–8 weeks; move boar out if not planning another breeding"), tH("Vaccinate piglets per vet protocol; iron injection at 3 days old prevents anemia"), tF("Transition weaners to starter ration; watch for post-weaning diarrhea carefully")],
+      [tM("Move to outdoor paddocks as ground firms up; rotate regularly to prevent parasite buildup"), tH("Deworming rotation if on a program; spring is a good time for fecal checks"), tF("Pigs on good pasture can have grain reduced 20–30% if forage quality is high")],
+      [tM("Establish wallow (mud pit) before hot weather — pigs cannot sweat and need mud to cool"), tH("Light-skinned breeds can sunburn badly; mud acts as their natural sunscreen"), tF("Peak forage season — supplement pasture with grain for growth rate targets")],
+      [tS("Wallow management is critical — refresh mud regularly; pigs regulate temperature entirely via mud"), tH("Watch for heat stress: rapid open-mouth breathing, reluctance to move are warning signs"), tF("Fresh water multiple times daily in heat; a 250-lb pig needs 4–6 gallons per day in summer")],
+      [tS("Hottest month — pigs are highly vulnerable to heat; shade is absolutely non-negotiable"), tM("Misters or sprinklers over lounging area significantly reduce dangerous heat stress"), tF("Feed in coolest parts of day — early morning and after sunset")],
+      [tF("Market pigs approach finish weight around 250 lbs live at 5–7 months"), tB("Plan fall breeding if producing winter piglets; gilts need to be 7+ months old"), tH("Final health check before processing; confirm medication withdrawal times are clear")],
+      [tB("Fall breeding; gilts should be 7+ months, 250+ lbs for first breeding"), tM("Plan winter shelter improvements; pigs confined in winter need generous space"), tF("Acorn and windfall fruit season — excellent free-range supplement for foraging pigs")],
+      [tM("Harvest excess stock before winter feed costs rise sharply"), tF("Adjust rations as temps cool; increase caloric density for remaining animals"), tH("Pre-winter deworming; treat for mange if skin appears rough, red, or itchy")],
+      [tM("Prepare and fortify winter housing; add extra deep bedding daily as cold sets in"), tF("Winter pigs need 15–20% more feed than summer pigs for the same growth rate"), tH("Watch for respiratory illness in cold, damp, poorly ventilated housing")],
+      [tM("Maintain deep litter pack — composting bedding generates significant warmth from below"), tF("High-quality feed and fresh bedding keep confined pigs comfortable and growing well"), tS("Check water twice daily — pigs need 1–1.5 gallons per 100 lbs of bodyweight per day")],
+    ]
+  },
+  {
+    id: "cattle", name: "Cattle", emoji: "🐄", accent: "#a0785a",
+    months: [
+      [tB("Calving watch if fall-bred — be prepared to assist in cold weather; hypothermia kills fast"), tF("Supplement hay with protein tubs or blocks; dry winter hay has low protein and energy"), tM("Check water tank heaters daily; cattle need 20–30 gallons per head per day, more in cold")],
+      [tB("Peak calving for spring-calving herds; keep a 24-hour calving watch during peak"), tH("Calf scours is the top killer of newborns — treat immediately with electrolytes"), tF("Increase feed for cows nursing newborns; energy demand nearly doubles post-calving")],
+      [tH("Vaccinate calves at 2–3 months: Blackleg, IBR, BVD per vet recommendation"), tB("Castrate bull calves and apply ear tags before 2 months old for easiest handling"), tF("Careful spring grass transition — frothy bloat risk is real on lush legume-heavy pastures")],
+      [tM("Begin rotational grazing — rest paddocks 30–60 days between grazing to rebuild grass"), tF("Remove winter protein supplements as grass reaches 6–8 inches and becomes nutritious"), tH("Spring pour-on for lice and emerging flies before populations build")],
+      [tH("Breeding season for spring-calving herds — bulls in with cows for 60–90 days"), tM("Check and test all electric fences before full pasture season begins"), tH("Monitor body condition: breeding cows should be BCS 5–6 on a 9-point scale")],
+      [tH("Fly control — pour-ons, back rubbers, or fly tags applied now; prevent pinkeye spread"), tH("Watch for repeat heats 21 days after bull introduction — indicates non-conception"), tS("Provide shade access; heat stress significantly reduces conception rates during breeding")],
+      [tS("Heat stress peaks — cattle stop eating during peak heat; feed at dusk and early morning"), tH("Pinkeye watch — flies spread it rapidly; treat early with antibiotic eye ointment"), tM("Rotate pastures on a tight schedule to prevent overgrazing as summer grasses slow")],
+      [tB("Wean calves at 6–8 months and 500–600 lbs target weight"), tH("Pregnancy test cows after bull removal — cull open cows before winter to save feed"), tF("Body-condition cows before winter — target BCS 5–6; thin cows need grain now not later")],
+      [tH("Fall vaccinations: Blackleg booster, respiratory complex, leptospirosis"), tM("Inventory hay supply — plan on 1.5–2% of bodyweight per day for the whole winter"), tH("Watch for hardware disease when cleaning up field trash before tilling or seeding")],
+      [tM("Pregnancy-check bred heifers; identify and cull open animals before winter"), tF("Transition to hay as grass declines; introduce new hay slowly over 2 weeks"), tH("Lice prevention pour-on in fall — lice thrive in winter hair coats and spread rapidly")],
+      [tF("Full winter hay feeding in cold regions: 25–30 lbs per cow per day minimum"), tM("Check all fencing before snow covers electric wire ground posts and makes repairs hard"), tH("Body condition check — thin cows in late pregnancy need grain supplement immediately")],
+      [tB("Late-pregnant cows need close attention — calving supplies stocked and ready to go"), tF("High-quality hay is critical in the final trimester — fetal growth peaks now"), tM("Clear manure from feeding areas to prevent dangerous slip-and-fall injuries on ice")],
+    ]
+  },
+  {
+    id: "sheep", name: "Sheep", emoji: "🐑", accent: "#d4e8f0",
+    months: [
+      [tB("Ewes in late pregnancy — prepare lambing area; watch for signs of labor"), tF("Pre-lambing energy boost: 0.5 lb grain/day per ewe in the last 4 weeks"), tH("Watch for pregnancy toxemia in heavy ewes — drench with propylene glycol if off feed")],
+      [tB("Peak lambing — monitor for malpresentations; have OB gloves and lubricant on hand"), tH("Newborns need colostrum within 2 hours; hypothermia is the #1 lamb killer"), tM("Keep lambing area dry, clean, and draft-free — grafting orphan lambs to ewes that lost lambs")],
+      [tH("CDT vaccination for lambs at 3–4 weeks and booster 4 weeks later"), tB("Castrate and ear-tag ram lambs while still young and easy to handle"), tG("Crutch ewes (trim wool around udder and tail) to keep nursing area clean")],
+      [tH("Start FAMACHA scoring — check inner eyelid color monthly through fall"), tM("Hoof trimming — wet spring conditions promote foot rot; check between toes carefully"), tF("Transition to pasture slowly; sudden lush grass causes pulpy kidney in lambs")],
+      [tG("SHEARING SEASON — shear before flies get active and before temperatures climb"), tH("Check for fly strike after shearing; keep wool around breech trimmed short"), tM("Ear tag, record, and draft flock after shearing — ideal time for full inventory review")],
+      [tH("Fly strike (blowfly) prevention — high risk on warm, humid days; check backsides daily"), tF("Ewes on good summer pasture can reduce or eliminate grain supplementation"), tM("Pasture rotation every 3–5 days to break internal parasite lifecycle")],
+      [tH("FAMACHA biweekly — barber pole worm peaks in summer heat and humidity"), tS("Provide shade and fresh water — sheep in fleece overheat more easily than they look"), tB("Evaluate ewes for next year's breeding; cull poor mothers and consistently low producers")],
+      [tB("Flush ewes: increase grain 2–3 weeks before ram introduction for higher twin rates"), tH("Pre-breeding deworming only if FAMACHA score warrants — avoid overuse, resistance is rising"), tG("Hoof trimming before rams go in — easier when all sheep are gathered in one place anyway")],
+      [tB("Ram introduction — mark his chest with raddle crayon to identify bred ewes"), tH("Breeding soundness exam for ram before season: feet, teeth, body condition, libido"), tF("Bred ewes on maintenance ration; early pregnancy has lower nutritional requirements")],
+      [tB("Change raddle color halfway through to identify ewes that cycle late"), tH("Schedule annual CDT boosters for ewes 4 weeks before lambing — plan the date now"), tM("Hay stores check — sheep need 4–6 lbs of hay per head per day throughout winter")],
+      [tF("Mid-pregnancy nutrition — quality hay is the priority; excess grain causes fat lambs and hard births"), tH("Hoof check and trim — lame ewes entering winter lose body condition fast"), tM("Prepare lambing jugs (small bonding pens) in advance; stock all supplies before January")],
+      [tB("Mark ewes with expected lamb dates based on raddle records"), tF("Last 6 weeks of pregnancy: increase grain to 0.5–1 lb/day as lamb growth accelerates"), tH("Selenium and vitamin E deficiency is common — blood test or blanket injection if in a deficient area")],
+    ]
+  },
+  {
+    id: "bees", name: "Honeybees", emoji: "🐝", accent: "#f5c842",
+    months: [
+      [tM("Do NOT open the hive — cold air breaks the winter cluster and can kill the colony"), tM("Heft the hive from behind; a light hive means starvation risk — add emergency feed"), tS("Ensure top ventilation: condensation kills winter clusters faster than cold does")],
+      [tF("Place a candy board or fondant above the cluster if hive weight is concerning"), tH("Watch for cleansing flights on warm days above 50°F — this is normal healthy behavior"), tM("Check for mouse entry; mice destroy comb and frames if they establish a nest inside")],
+      [tH("First full inspection when sustained temperatures reach 55°F+ — check for queen and brood"), tM("Replace moldy or damaged frames; add a second super if population is growing"), tB("Look for swarm cells along bottom of frames — early splits prevent losing half your colony")],
+      [tB("SWARM PREVENTION MONTH — add space, make splits, or requeen before they leave"), tH("First Varroa mite alcohol wash of the year — treat if above 2 mites per 100 bees"), tM("Reverse brood boxes if running two-story Langstroth to equalize population distribution")],
+      [tF("Peak nectar flow — add honey supers promptly; full supers trigger swarming"), tH("Second Varroa check — treat only if threshold exceeded; don't treat during active honey flow"), tM("Monitor weekly during peak flow; split or add supers as population explodes rapidly")],
+      [tF("Harvest early honey supers if frames are 80%+ capped; leave uncapped frames"), tH("Post-nectar-flow Varroa treatment if you're done collecting honey from those supers"), tB("Requeen failing colonies — a new queen improves temperament and disease resistance")],
+      [tS("Summer dearth begins — bees may rob weaker hives; reduce entrances as needed"), tM("Keep a fresh water source nearby; bees use water to cool the hive through evaporation"), tH("Watch for small hive beetles in warm climates; traps placed inside frames help")],
+      [tH("CRITICAL: Treat for Varroa mites after honey harvest — mite levels peak in fall bees"), tF("Assess winter stores — bees need 60–80 lbs of honey to survive a full winter"), tM("Reduce entrance to mouse-guard size; add robbing screen if summer dearth continues")],
+      [tH("Final Varroa treatment if mite count is still elevated after August treatment"), tF("Feed 2:1 sugar syrup to supplement stores if hive weight is below target"), tM("Last thorough inspection before winter prep; confirm queen is present and actively laying")],
+      [tM("Insulate top of hive; install mouse guard; add entrance reducer for winter"), tF("Stop feeding syrup when nighttime temps consistently drop below 50°F — switch to solid fondant"), tH("Heft hive to assess stores one final time before cold weather arrives to stay")],
+      [tM("Minimal disturbance — check externally only; a pile of dead bees outside is normal"), tS("Ensure top ventilation: upper entrance or moisture quilt keeps condensation off the cluster"), tH("A quiet hive in cold weather is a healthy hive — resist every urge to open it")],
+      [tM("Monitor hive weight monthly by hefting — a light hive in December needs emergency candy board"), tS("Snow can insulate hives naturally — don't brush it off unless it fully blocks the entrance"), tH("Plan next year now: order packages or nucleus colonies early — quality sources sell out by January")],
+    ]
+  },
+  {
+    id: "turkeys", name: "Turkeys", emoji: "🦃", accent: "#b5451b",
+    months: [
+      [tM("Provide cold shelter with deep bedding; turkeys are hardy but still need wind protection"), tF("High-protein feed at 22–24% protein maintains feather condition through winter"), tH("Keep turkeys separated from chickens — blackhead disease spreads through chicken droppings")],
+      [tB("Order poults now — heritage breeds sell out by March and ship May through July"), tM("Plan brooder setup: turkeys need 100°F in week 1 and significantly more space than chicks"), tH("Breeding toms begin display behavior — monitor flock dynamics and separate if fighting")],
+      [tB("If keeping a breeding flock: toms and hens together now; collect and set fertile eggs"), tM("Order from hatcheries for May–June delivery — this is the last reliable ordering month"), tH("Annual health check for breeding birds: weight, feet, wattles, eyes, overall condition")],
+      [tB("Poults from spring orders begin arriving — have brooder ready before they ship"), tM("Brooder at 95–100°F, non-slip floor, turkey-specific starter feed at 28% protein"), tH("Poult warning: they drown easily in water, pile and smother, and are fragile — check hourly")],
+      [tB("Poults at 4–6 weeks old: begin transitioning to outdoor pen with full overhead predator cover"), tF("Grower feed: 26–28% protein for broad-breasted; 20–22% for heritage breeds growing more slowly"), tH("Maintain blackhead separation from chickens or use medicated feed where legally permitted")],
+      [tM("Full outdoor access with secure predator protection — turkeys are high-value targets"), tF("Supplement with high-protein treats: mealworms, soldier fly larvae, garden insects"), tH("Isolate any bird with nasal discharge immediately — respiratory infections spread fast in flocks")],
+      [tS("Shade and plenty of fresh water — turkeys handle heat less efficiently than chickens"), tF("Broad-breasted market birds on track: reach 25–30 lbs at 16–20 weeks of age"), tH("Final health assessment for Thanksgiving birds; ensure no medications with active withdrawal times")],
+      [tB("Broad-breasted birds approaching processing weight; schedule butcher appointments now"), tM("Heritage breeds continue growing — toms need 28+ weeks to reach full market weight"), tH("Stop feed 12 hours before processing day for easier processing and cleaner carcasses")],
+      [tB("Broad-breasted processing for October pickup and early Thanksgiving orders"), tM("Heritage toms may reach 20–25 lbs and hens 12–16 lbs at 28+ weeks"), tF("Reduce feed 2 weeks before processing to improve feed conversion and finish quality")],
+      [tB("Thanksgiving bird processing — schedule harvest for week of November 20–24"), tM("Final harvest of all market birds not kept for breeding stock next year"), tH("Keep breeding flock healthy through harvest season — they carry next year's genetics")],
+      [tB("Breeding toms and hens into winter housing; separate toms to reduce stress on hens"), tM("Deep-clean all grow-out areas before next spring; rotate pasture areas if possible"), tH("Check for lice and mites as birds transition into closer winter housing conditions")],
+      [tB("Rest breeding flock through December; plan next year's production goals and breed selection"), tM("Maintenance and repair of all brooder and grow-out equipment during the off-season"), tF("Reduce breeding flock to maintenance ration only — they need minimal calories in winter rest")],
+    ]
+  },
+  {
+    id: "horses", name: "Horses", emoji: "🐴", accent: "#8a6d30",
+    months: [
+      [tF("Increase hay in cold — horses need 1.5–2% of body weight in forage daily; more in extreme cold"), tM("Check water daily; horses will colic before they drink icy or near-frozen water"), tG("Thick winter coat is a natural thermometer — only blanket if horse is clipped, elderly, or thin")],
+      [tH("Schedule dental float — worn or sharp teeth mean poor hay utilization, especially in older horses"), tH("Deworming rotation per fecal egg count — targeted treatment is far better than calendar dosing"), tM("Body condition score through the winter coat; add grain now if ribs are easy to feel")],
+      [tG("Spring shedding — daily grooming with a shedding blade removes dead coat and checks for skin issues"), tF("Spring grass CAUTION: introduce pasture over 2–3 weeks — sudden grass access causes laminitis"), tM("Check for mud fever (scratches) on lower legs — clean, dry, and treat with zinc oxide cream")],
+      [tH("Spring vaccinations: EEE/WEE, West Nile, Flu/Rhino, Tetanus, Rabies — consult your vet"), tM("Farrier appointment for hoof trimming or shoeing — winter hooves are often long and unbalanced"), tF("Pregnant mares on fescue: move to clean grass 60–90 days before foaling to avoid fescue toxicosis")],
+      [tH("Second deworming per fecal egg count — never skip the count, resistance is a real problem"), tM("Begin pasture rotation; rest paddocks 30 days between grazing to maintain grass health"), tS("Fly protection program begins: masks, sheets, permethrin spray, and leg wraps as needed")],
+      [tS("Fly sheet and mask daily if horse shows irritation; check under sheet for rubbing and sweat"), tF("Electrolytes in water or top-dressed on feed during heat waves to encourage drinking"), tH("Watch for summer sores around wounds and lips — caused by Habronema larvae deposited by flies")],
+      [tS("Peak heat: ride only in early morning or after sunset; watch for anhidrosis — inability to sweat"), tF("Ensure minimum 5 gallons of water per day per horse in heat; working horses need significantly more"), tH("Bot fly yellow eggs appear on legs and belly — remove weekly with a bot knife; interrupt the lifecycle")],
+      [tG("Bot egg removal from legs, jaw, and belly using a fine-toothed comb or warm water"), tH("Fecal egg count before fall deworming — use targeted selective treatment, not a calendar rotation"), tF("Body condition assessment before winter — add weight now; it is very hard to add in deep cold")],
+      [tH("Fall deworming per fecal results — treat for bots after first hard frost kills adult bot flies"), tH("Fall vaccinations if on a biannual schedule — flu, rhino, and others"), tM("Frost ends laminitis season; horses can graze more freely as sugars drop in dying grass")],
+      [tM("Blanketing decisions based on body condition, whether horse is clipped, age, and shelter quality"), tF("Introduce hay gradually as grass declines; match hay quality to horse's workload and condition"), tH("Lice check as winter coat grows in — easier to treat before infestation becomes severe")],
+      [tM("Mud management is critical around gates and feeders — thrush and mud fever thrive in wet mud"), tH("Thrush inspection: lift each foot, check for black tarry smell and soft frog — treat promptly"), tF("Adjust feed for workload changes — horses in light winter work need less grain, not less hay")],
+      [tM("Ice management in buckets and tanks daily — horses will colic before drinking near-frozen water"), tH("Year-end vet exam if not done recently: teeth, body weight, Coggins test if traveling"), tB("Plan spring breeding now if applicable — book a stallion and schedule reproductive exams in December")],
+    ]
+  },
+];
+
+function AnimalCareCalendar() {
+  const thisMonth = new Date().getMonth();
+  const [selected, setSelected] = useState([]);
+  const [month, setMonth] = useState(thisMonth);
+
+  function toggle(id) {
+    setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+  }
+
+  const activeAnimals = ACC_ANIMALS.filter(a => selected.includes(a.id));
+
+  return (
+    <div className="acc-shell">
+
+      {/* ── SIDEBAR ── */}
+      <div className="acc-sidebar">
+        <div className="acc-sidebar-title">Your Animals</div>
+        <div className="acc-sidebar-sub">Select all that apply</div>
+        <div className="acc-animal-grid">
+          {ACC_ANIMALS.map(a => (
+            <button
+              key={a.id}
+              className={`acc-animal-btn${selected.includes(a.id) ? " acc-animal-btn--on" : ""}`}
+              style={selected.includes(a.id) ? { borderColor: a.accent, background: a.accent + "22" } : {}}
+              onClick={() => toggle(a.id)}
+            >
+              <span className="acc-animal-emoji">{a.emoji}</span>
+              <span className="acc-animal-name">{a.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── MAIN ── */}
+      <div className="acc-main">
+        <div className="acc-month-nav">
+          {ACC_MONTH_SHORT.map((lbl, i) => (
+            <button
+              key={i}
+              className={[
+                "acc-month-pill",
+                month === i    ? "acc-month-pill--active"  : "",
+                thisMonth === i && month !== i ? "acc-month-pill--today" : "",
+              ].join(" ").trim()}
+              onClick={() => setMonth(i)}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+
+        <div className="acc-month-heading">
+          {ACC_MONTH_NAMES[month]}
+          {month === thisMonth && <span className="acc-this-month-tag">This Month</span>}
+        </div>
+
+        {selected.length === 0 ? (
+          <div className="acc-empty">
+            <div className="acc-empty-icon">🐾</div>
+            <div className="acc-empty-title">Select your animals</div>
+            <div className="acc-empty-sub">Choose the species you raise on the left to see monthly care tasks.</div>
+          </div>
+        ) : (
+          <div className="acc-cards">
+            {activeAnimals.map(animal => {
+              const tasks = animal.months[month] || [];
+              return (
+                <div key={animal.id} className="acc-card" style={{ borderLeftColor: animal.accent }}>
+                  <div className="acc-card-header">
+                    <span className="acc-card-emoji">{animal.emoji}</span>
+                    <span className="acc-card-name">{animal.name}</span>
+                    <span className="acc-card-count">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</span>
+                  </div>
+                  {tasks.map((task, i) => {
+                    const tt = ACC_TASK_TYPES[task.type];
+                    return (
+                      <div key={i} className="acc-task" style={{ background: tt.bg }}>
+                        <span className="acc-task-badge" style={{ color: tt.color }}>
+                          {tt.icon} {tt.label}
+                        </span>
+                        <p className="acc-task-text">{task.text}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============= ANIMAL CARE CALENDAR =============
+
+const ACC_TASK_TYPES = {
+  health:      { icon: "🩺", label: "Health",      color: "#b5451b", bg: "rgba(181,69,27,0.08)"  },
+  feeding:     { icon: "🌾", label: "Feeding",     color: "#7a5c1e", bg: "rgba(200,169,110,0.14)" },
+  breeding:    { icon: "💕", label: "Breeding",    color: "#6a3e78", bg: "rgba(122,74,110,0.09)"  },
+  maintenance: { icon: "🔧", label: "Maintenance", color: "#3d2b1f", bg: "rgba(92,61,46,0.08)"    },
+  seasonal:    { icon: "🌡️", label: "Seasonal",   color: "#1e6a8e", bg: "rgba(46,110,142,0.08)"  },
+  grooming:    { icon: "✂️", label: "Grooming",    color: "#3a5e2a", bg: "rgba(74,94,58,0.09)"   },
+};
+const ACC_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ACC_SHORT  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const tH = t => ({ type: "health",      text: t });
+const tF = t => ({ type: "feeding",     text: t });
+const tB = t => ({ type: "breeding",    text: t });
+const tM = t => ({ type: "maintenance", text: t });
+const tS = t => ({ type: "seasonal",    text: t });
+const tG = t => ({ type: "grooming",    text: t });
+
+const ACC_ANIMALS = [
+  {
+    id: "chickens", name: "Chickens", emoji: "🐓", accent: "#e8b84b",
+    months: [
+      [tF("Increase feed ~10% — hens burn more calories staying warm in cold"), tM("Check water heaters daily; frozen water stops laying within 24 hours"), tS("Run 14–16 hrs of artificial light to maintain winter egg production")],
+      [tH("Inspect combs and wattles for frostbite; apply petroleum jelly as prevention"), tB("Order spring chicks now — hatcheries fill up by March"), tM("Deep-clean and disinfect coop while flock is at its smallest")],
+      [tB("Set up brooder before chicks arrive: 95°F week 1, drop 5°F each week after"), tH("First lice and mite check of the year; treat coop at dusk if found"), tF("Switch new chicks to 20–22% protein chick starter feed")],
+      [tM("Spring cleaning: replace all bedding, scrub surfaces, inspect hardware cloth for gaps"), tH("Deworm if on a rotation program; check thoroughly for external parasites"), tF("Transition flock to pasture gradually — sudden grass change causes digestive upset")],
+      [tH("Check for bumblefoot (swollen, scabbed foot pads) during routine handling"), tF("Peak laying demands peak nutrition — quality layer pellets always available"), tS("Set up shade structures and extra water stations before summer heat arrives")],
+      [tS("Provide shade, ventilation, and cold water — heat stress kills layers fast"), tF("Reduce scratch grain in summer; it raises body temperature"), tH("Watch for panting, drooping wings, pale combs — early signs of heat stroke")],
+      [tS("Freeze fruit or veggie treats as cooling snacks; refresh water multiple times daily"), tH("Peak parasite pressure — red mites thrive in heat; treat coops at dusk"), tM("Maximize coop ventilation; open all vents and add fans if temps exceed 90°F")],
+      [tH("Molt season begins for many hens — reduced laying is normal, not illness"), tF("Add extra protein (mealworms, gamebird feed) to support feather regrowth"), tM("Repair and repaint coop before fall rains arrive")],
+      [tB("Evaluate flock: cull non-layers and aging hens before winter feed costs mount"), tM("Weatherize coop — seal drafts, check roof, prep deep litter method"), tF("Reintroduce scratch grains to help hens build fat reserves before cold")],
+      [tS("Restart supplemental lighting — 14 hrs/day prevents winter egg drop"), tM("Add deep bedding (6–8 inches) for winter warmth via composting"), tH("Watch for respiratory illness as damp autumn weather sets in")],
+      [tF("Warm mash on cold mornings boosts calories and morale"), tH("Annual check for internal parasites before winter — consider a fecal float test"), tM("Switch to heated water base if temps drop below freezing")],
+      [tM("Maximize bedding depth; ensure good ventilation — moisture causes more harm than cold"), tF("High-energy treats (sunflower seeds, suet) help hens stay warm overnight"), tS("Plan next year's flock: breeds, replacements, and hatchery orders")],
+    ],
+  },
+  {
+    id: "ducks", name: "Ducks", emoji: "🦆", accent: "#7ab8d4",
+    months: [
+      [tM("Ensure water is unfrozen daily — ducks must dunk their bills to clear sinuses"), tS("Provide wind-blocking shelter; ducks tolerate cold better than chickens"), tF("Increase layer pellets slightly for cold-weather energy needs")],
+      [tB("Ducks often begin laying in Feb — provide low nesting boxes; they don't perch"), tH("Check bills and feet for frostbite in extreme cold"), tM("Collect eggs frequently; ducks lay early morning on the ground")],
+      [tB("Incubate fertile duck eggs at 99.5°F, 55–65% humidity for 28 days"), tF("Introduce ducklings to shallow water supervised from day 1"), tM("Clean pond or pool; ducks foul water quickly")],
+      [tH("First parasite check of season; ducks are generally hardy but monitor for lice"), tM("Spring-clean duck house; rake and compost soiled bedding"), tF("Transition to pasture — ducks are excellent foragers and natural slug hunters")],
+      [tB("If hatching a second clutch, set eggs now for summer ducklings"), tS("Install shade over the water area before summer heat"), tF("Supplement niacin via brewer's yeast in feed — ducks need 3× the niacin of chickens")],
+      [tS("Ducks handle heat well if they have swimming water; keep pool fresh daily"), tH("Watch for Angel Wing in ducklings — too-high protein causes it; switch to 15–16% feed"), tM("Maintain clean swimming water to prevent bacterial growth")],
+      [tS("Keep swimming pool cool and clean — it's their primary heat-management tool"), tF("Fresh greens and garden slugs are a welcome summer treat"), tH("Check for bumblefoot if ducks spend time on hard or rough ground")],
+      [tH("Late-summer molt — reduced egg production is normal"), tM("Drain and scrub pond or pool thoroughly; algae peaks in summer heat"), tB("Evaluate breeding stock for next year's hatching season")],
+      [tM("Repair and weatherize duck house before fall rains"), tF("Restore full layer ration as molt ends and laying resumes"), tH("Deworm if on a rotation; fecal check recommended in fall")],
+      [tF("Increase calories as temps drop; ducks stay active outdoors longer than chickens"), tM("Prepare heated water station; ducks require liquid water year-round"), tB("Evaluate flock size — decide how many to overwinter")],
+      [tS("Ducks can forage in light snow; let them choose their outdoor time"), tM("Add extra bedding in shelter for warmth"), tH("Monitor feet in freezing mud — foot rot risk increases in wet-cold conditions")],
+      [tM("Daily water management is critical — unfrozen access is non-negotiable"), tF("High-energy feed supplement in extreme cold snaps"), tS("Ducks often play in first snowfalls — enrichment is good for winter mental health")],
+    ],
+  },
+  {
+    id: "rabbits", name: "Rabbits", emoji: "🐰", accent: "#c8a96e",
+    months: [
+      [tM("Check water bottles twice daily — they freeze before bowls do"), tS("Add extra nesting hay; rabbits self-regulate warmth but comfort matters"), tH("Watch for respiratory illness (snuffles) in cold, damp conditions")],
+      [tB("Begin breeding for March litters; gestation is 28–31 days"), tM("Prepare nest boxes: fill with hay 3 days before the doe's due date"), tH("Pre-breeding health check — weight, teeth alignment, reproductive health")],
+      [tB("First litters born; check kits daily but minimize handling for the first 10 days"), tH("Watch for mastitis in does; check nipples for swelling or heat after kindling"), tM("Keep nest box clean; remove soiled bedding gently without disturbing kits")],
+      [tB("Wean kits at 6–8 weeks; separate by sex immediately at 8 weeks to prevent early breeding"), tH("Spring health check: teeth, weight, coat condition for all adults"), tF("Transition does back to a breeding ration after weaning")],
+      [tB("Peak breeding season; does can kindle every 35–42 days if well-managed"), tS("Monitor temperatures — rabbits show heat distress above 85°F"), tM("Clean and sanitize hutches as mud season dries up")],
+      [tS("HEAT IS CRITICAL — rabbits can die above 104°F internal body temperature"), tM("Place frozen 2-liter bottles in cages for cooling; move hutches fully into shade"), tF("Reduce pellets slightly in heat; increase timothy hay and fresh leafy greens")],
+      [tS("Suspend breeding — heat stress causes high kit mortality and doe distress"), tM("Multiple frozen bottles, fans, and misters; check every few hours on hot days"), tH("Ear veins flushed or purple = overheating; cool immediately with damp cloth")],
+      [tS("Continue cooling protocols through late summer"), tB("Resume light breeding as evenings cool in late August"), tH("Post-summer health check; weight loss from heat stress is common")],
+      [tB("Fall breeding — excellent conception rates as temperatures cool"), tM("Transition hutches back to receive more sun for warmth"), tH("Check for ear mites — dark waxy debris in ear canal is the sign")],
+      [tB("Strong fall litters; cool weather makes kit survival much easier"), tM("Prepare winter hutch insulation; block wind while maintaining airflow"), tF("Increase pellet ration slightly as cold weather arrives")],
+      [tB("Late breeding — ensure kits are born before deep cold arrives"), tM("Nest boxes in full time; add extra hay depth for insulation"), tH("Check for sore hocks on wire floors; add resting mats if skin is irritated")],
+      [tM("Reliable water supply is the #1 winter priority — check bottles every few hours"), tF("Extra pellets and unlimited hay for warmth; rabbits need more calories in cold"), tH("Year-end health check; record breeding performance and plan next year's culls")],
+    ],
+  },
+  {
+    id: "goats", name: "Goats", emoji: "🐐", accent: "#9dc183",
+    months: [
+      [tB("Peak kidding if fall-bred — kids need colostrum within 1 hour of birth"), tF("Increase grain for late-pregnant and lactating does — 1 lb/day per lb of milk produced"), tH("Watch for ketosis (pregnancy toxemia) in heavily pregnant does in the final 2 weeks")],
+      [tB("Kidding continues; keep area dry and draft-free — hypothermia kills kids within hours"), tH("CDT booster for does 4 weeks before kidding; kids need CDT at 4 and 8 weeks"), tM("Fresh dry bedding is critical; wet kidding areas spread disease")],
+      [tH("Vaccinate kids: CDT at 4 weeks, booster at 8 weeks — both doses required"), tG("Disbud kids at 3–7 days old; scurs grow if delayed beyond 10 days"), tF("Transition herd to spring pasture slowly — rapid grass change causes bloat")],
+      [tH("FAMACHA scoring for barber pole worm — check inner eyelid; treat below score 3"), tM("Hoof trimming season — overgrown hooves cause lameness on wet spring ground"), tF("Monitor for grass tetany on lush spring pasture; supplement magnesium if needed")],
+      [tH("Parasite pressure peaks — rotate pastures, FAMACHA score weekly"), tF("Peak milk production — support with quality hay, kelp, and loose goat minerals"), tM("Manage brush and weeds — goats excel at clearing invasive plant species")],
+      [tG("Shear Angora or Cashmere goats if not done in spring — before fly season peaks"), tH("Watch for pinkeye (conjunctivitis) — spreads rapidly in summer flies"), tS("Provide shade and fresh water; goats are more heat-sensitive than most expect")],
+      [tH("Summer FAMACHA checks every 2 weeks; barber pole worm burden peaks in heat and humidity"), tS("Kids born in spring are reaching weaning age; adjust does' rations down"), tM("Trim feet again if hooves have grown fast on wet summer ground")],
+      [tB("Bucks come into rut — separate from does unless actively breeding; behavior gets intense"), tF("Flush does before breeding: increase grain 2 weeks before introducing buck"), tH("Pre-breeding health check; treat any parasite issues before conception")],
+      [tB("Breeding season — note each doe when bred; gestation is ~150 days"), tH("Annual CDT booster for whole herd if not done in spring"), tM("Prepare hay storage: 30–50 lbs per goat per month is a typical winter need")],
+      [tB("Confirm pregnancies via ultrasound at day 35–45 or watch for return heats at day 21"), tF("Adjust rations: early pregnancy = maintenance; final 6 weeks = increase grain"), tM("Hoof trimming before winter — clean hooves resist foot rot better in mud")],
+      [tF("Late pregnancy nutrition: increase grain for does in the final 6 weeks"), tH("Watch for urinary calculi in wethers — maintain 2:1 calcium-to-phosphorus ratio"), tM("Prepare kidding area: clean, insulated, brightly lit, and close to your house")],
+      [tF("Final pre-kidding nutrition push; selenium/vitamin E injection if in a deficient region"), tH("Gather kidding supplies: iodine, feeding tube, towels, colostrum, heat lamp"), tB("Know your due dates; check late-pregnant does every 4 hours as the date approaches")],
+    ],
+  },
+  {
+    id: "pigs", name: "Pigs", emoji: "🐷", accent: "#f4a0a0",
+    months: [
+      [tM("Deep straw bedding is essential — pigs will burrow for warmth"), tF("Increase feed by 10–15% in cold weather; pigs burn significant calories staying warm"), tH("Check for frostbitten ears; keep shelter draft-free but not completely airtight")],
+      [tB("Farrowing prep if sows are bred — heat lamp, creep area, and anti-crush rail in place"), tH("Check piglet birthweights; small pigs need supplemental feeding within hours"), tM("Keep farrowing area 70–75°F for sow, 85–90°F for piglets under lamp")],
+      [tB("Wean piglets at 6–8 weeks; separate boar if not actively breeding"), tH("Vaccinate piglets per vet protocol; iron injection at 3 days prevents anemia"), tF("Transition weaners to starter ration; watch for post-weaning scours for 2 weeks")],
+      [tM("Move to outdoor paddocks as ground firms; rotate to prevent parasite buildup"), tH("Deworming rotation — spring is a good start-of-year treatment"), tF("Pigs on good pasture can have grain reduced 20–30% if forage quality is high")],
+      [tM("Establish wallow (mud pit) before hot weather — pigs cannot sweat"), tH("Check for sunburn on light-skinned breeds; mud is their natural sunscreen"), tF("Peak forage season — supplement pasture with grain to maintain growth rates")],
+      [tS("Wallow management is critical — refresh mud regularly; pigs regulate temperature through mud"), tH("Watch for heat stress: rapid shallow breathing, panting, reluctance to move"), tF("Fresh cold water multiple times daily; cold water actively helps them cool down")],
+      [tS("Hottest month — pigs are most vulnerable to heat; shade is non-negotiable"), tM("Misters or sprinklers over lounging areas significantly reduce heat stress"), tF("Feed only during the coolest parts of day — early morning and evening")],
+      [tF("Market pigs approaching finish weight (~250 lbs live at 5–7 months)"), tB("Plan fall breeding if producing winter or early spring piglets"), tH("Final health check before processing; confirm withdrawal times for any medications")],
+      [tB("Fall breeding; gilts should be 7+ months old and 250+ lbs for first breeding"), tM("Plan winter shelter upgrades; pigs need more space if being confined"), tF("Acorn and windfall fruit season — excellent natural supplement, feed freely")],
+      [tM("Harvest excess market-weight stock before winter feed costs increase"), tF("Adjust rations as temps cool; gradually increase caloric density"), tH("Pre-winter deworming; treat for mange if skin shows roughness or scratching")],
+      [tM("Prepare winter housing; add extra bedding daily as cold sets in"), tF("Winter pigs need 15–20% more total feed than summer"), tH("Watch for respiratory illness as cold damp conditions create disease pressure")],
+      [tM("Maintain deep litter pack for warmth — composting bedding generates real heat"), tF("Rich feed and constant bedding keep pigs comfortable and growing"), tS("Check water twice daily — pigs need 1–1.5 gallons per 100 lbs body weight per day")],
+    ],
+  },
+  {
+    id: "cattle", name: "Cattle", emoji: "🐄", accent: "#a0785a",
+    months: [
+      [tB("Calving watch if fall-bred — cold greatly increases risk; be ready for assistance"), tF("Supplement hay with protein tubs or blocks; standing winter grass has little nutrition"), tM("Check water tank heaters daily; cattle need 20–30 gallons per head per day minimum")],
+      [tB("Peak calving season for spring-calving herds; keep close night watch"), tH("Scours (calf diarrhea) is the top killer of newborns — treat immediately with electrolytes"), tF("Increase feed for nursing cows; energy demand nearly doubles after calving")],
+      [tH("Vaccinate calves for Blackleg, IBR, and BVD at 2–3 months; record everything"), tB("Castrate and ear-tag bull calves before 2 months for easiest recovery"), tF("Careful spring grass transition — frothy bloat risk is high on lush legume pastures")],
+      [tM("Begin rotational grazing — rest each paddock 30–60 days between grazings"), tF("Remove winter protein supplements as grass reaches 6–8 inches in height"), tH("Spring pour-on for lice and emerging flies as insect season begins")],
+      [tH("Breeding season — bulls in with cows for 60–90 days for spring calving next year"), tM("Check and test all electric fences before full-season pasture rotation begins"), tF("Monitor body condition score — breeding cows should be 5–6 on a 9-point scale")],
+      [tH("Fly control critical — pour-ons, back rubbers, or fly tags; prevent pinkeye spread"), tH("Breeding check — watch for repeat heats at 21-day intervals after bull introduction"), tS("Provide shade; heat stress reduces conception rates significantly")],
+      [tS("Heat stress peaks — cattle stop eating at midday; feed at dusk and dawn only"), tH("Pinkeye watch — flies spread it rapidly; isolate affected animals immediately"), tM("Rotate pastures on tight schedule to prevent overgrazing in dry conditions")],
+      [tB("Wean calves at 6–8 months; target 500–600 lbs as weaning weight"), tH("Pregnancy test cows after bull removal — cull open cows before winter to cut costs"), tF("Body condition score cows — target BCS 5–6; supplement thin animals now")],
+      [tH("Fall vaccinations: Blackleg booster, respiratory complex, leptospirosis"), tM("Hay inventory — calculate winter feed needs: 1.5–2% bodyweight in hay per day"), tF("Watch for hardware disease if cleaning fields of old fencing materials")],
+      [tM("Pregnancy-check bred heifers; cull or mark open animals"), tF("Transition to hay as grass declines; introduce slowly over 2 weeks"), tH("Lice prevention pour-on in fall — lice thrive in dense winter hair coats")],
+      [tF("Full winter hay feeding; 25–30 lbs per cow per day as a baseline"), tM("Check all fencing before snow covers electric wire ground posts"), tH("Body condition check — thin cows in late pregnancy must get extra grain supplement now")],
+      [tB("Late-pregnant cows need extra care — calving supplies fully stocked and ready"), tF("High-quality hay is critical in final trimester — fetal development is at its peak"), tM("Clear manure from feeding areas to prevent slip-and-fall injuries on ice")],
+    ],
+  },
+  {
+    id: "sheep", name: "Sheep", emoji: "🐑", accent: "#b8d4e8",
+    months: [
+      [tB("Ewes in late pregnancy — increase energy feed; have lambing supplies ready"), tF("Final 4 weeks: 0.5 lb grain/day per ewe prevents pregnancy toxemia"), tH("Watch for ketosis in heavy ewes — drench with propylene glycol at first sign")],
+      [tB("Lambing peak — monitor for malpresentations; have OB sleeves and lube ready"), tH("Newborns need colostrum within 2 hours; hypothermia is the #1 lamb killer"), tM("Dry, clean lambing jugs for every ewe/lamb pair; graft orphan lambs quickly")],
+      [tH("CDT vaccination for lambs at 3–4 weeks; booster 4 weeks later — both doses required"), tB("Castrate and ear-tag ram lambs early; band while young for easiest recovery"), tG("Crutch (trim wool around) ewes' udders and tail area for hygiene")],
+      [tH("FAMACHA scoring starts — check inner eyelid monthly through fall; treat below score 3"), tM("Hoof trimming — wet spring conditions promote foot rot; check between toes"), tF("Transition to pasture gradually; pulpy kidney on lush spring grass is a real risk")],
+      [tG("SHEARING SEASON — shear before flies get active; book your shearer well in advance"), tH("Check for fly strike immediately after shearing; keep breech area short all summer"), tM("Ear tag, record weights, and draft flock after shearing — best time for full inventory")],
+      [tH("Blowfly strike prevention — high risk on warm humid days, especially around the breech"), tF("Ewes on good summer pasture can significantly reduce or eliminate grain supplementation"), tM("Pasture rotation every 3–5 days to break the barber pole worm life cycle")],
+      [tH("FAMACHA scoring biweekly — barber pole worm peaks in summer heat and humidity"), tS("Provide shade and fresh water — sheep can overheat even after shearing"), tB("Evaluate ewes: cull poor mothers, chronic wormy animals, and low producers now")],
+      [tB("Flushing ewes: increase grain 2–3 weeks before ram introduction for higher twin rates"), tH("Pre-breeding dewormer only if FAMACHA warrants — avoid over-treating; resistance risk"), tG("Hoof trimming before rams go in — easier handling when everyone is gathered")],
+      [tB("Ram introduction — mark chest with raddle crayon to identify which ewes are bred"), tH("Check ram's breeding soundness: feet, teeth, libido, and body condition before season"), tF("Bred ewes on maintenance ration; early pregnancy has the lowest nutritional demands")],
+      [tB("Change raddle color at day 17 to identify ewes who cycled again (not held)"), tH("Annual CDT booster for ewes — give 4 weeks before lambing; calculate due dates now"), tM("Hay stores check — sheep need 4–6 lbs of hay per head per day through winter")],
+      [tF("Mid-pregnancy nutrition — good quality hay, but hold off on excess grain; ewes get fat easily"), tH("Foot rot check and trim — lame ewes entering winter lose body condition rapidly"), tM("Prepare lambing jugs (small pens); stock iodine, stomach tubes, towels, and colostrum")],
+      [tB("Mark ewes with expected lamb dates based on breeding and raddle records"), tF("Last 6 weeks of pregnancy: grain increases to 0.5–1 lb/day as twin fetal growth peaks"), tH("Selenium or vitamin E deficiency is common — blood test or blanket injection if in a deficient region")],
+    ],
+  },
+  {
+    id: "bees", name: "Honeybees", emoji: "🐝", accent: "#e8b84b",
+    months: [
+      [tM("Do NOT open the hive — breaking the cluster in cold can kill the entire colony"), tM("Heft hive from the back; a noticeably light hive means starvation risk — emergency feed now"), tS("Ensure top ventilation; moisture kills winter clusters faster than cold temperature")],
+      [tF("Place candy board or fondant above cluster if hive felt light in January"), tH("Watch for cleansing flights on warm days above 50°F — normal, healthy winter behavior"), tM("Check for mouse entry via front entrance; mice destroy comb and frames quickly")],
+      [tH("First full inspection when sustained temps reach above 55°F — check queen, brood, and stores"), tM("Replace any moldy or damaged frames; add a medium super if colony is very strong"), tB("Look for swarm cells on bottom of frames — early splits prevent losing half the hive")],
+      [tB("SWARM PREVENTION is the main April job — add space, make splits, or requeen if needed"), tH("First Varroa mite alcohol wash of the year; treat if above 2 mites per 100 bees"), tM("Reverse brood boxes in Langstroth hives to equalize population distribution")],
+      [tF("Peak nectar flow — add honey supers promptly; full supers with nowhere to go triggers swarming"), tH("Second Varroa check — treat only if threshold exceeded during active honey flow"), tM("Monitor weekly during peak flow; split or add space as population explodes")],
+      [tF("Harvest early honey if supers are fully capped — uncapped honey can ferment in storage"), tH("Post-nectar-flow Varroa treatment window if done collecting honey this year"), tB("Requeen failing or defensive colonies — a new queen improves genetics and mite resistance")],
+      [tS("Summer dearth begins — bees may rob weaker hives; reduce all entrances now"), tM("Keep fresh water source nearby; bees need water to cool the hive by evaporation"), tH("Watch for small hive beetles; traps in the corners help in warm climates")],
+      [tH("CRITICAL: treat for Varroa mites after honey harvest — mite levels peak in fall bees"), tF("Assess winter stores — bees need 60–80 lbs of capped honey to survive winter safely"), tM("Reduce entrance to mouse-guard size; add robbing screen if dearth-related robbing occurs")],
+      [tH("Final mite treatment if alcohol wash shows threshold still elevated after August"), tF("Feed 2:1 sugar syrup to supplement stores if hive still feels light after inspection"), tM("Last full inspection before winter prep; confirm queen is present and laying well")],
+      [tM("Insulate hive top; install mouse guards; add entrance reducer to smallest opening"), tF("Stop feeding sugar syrup when temps drop below 50°F — switch to solid candy or fondant"), tH("Final heft to assess winter stores before hard cold sets in")],
+      [tM("Minimal disturbance — check externally only; a dead bee pile at the entrance is normal"), tS("Ensure top ventilation; condensation dripping onto the cluster is a common winter killer"), tH("A quiet hive in cold weather is a healthy hive — resist the urge to open it")],
+      [tM("Monitor hive weight monthly by hefting; order packages or nucs for spring now — they sell out"), tS("Snow can insulate hives — don't brush it off unless it fully blocks the entrance"), tH("Plan next year: order queens, packages, or nucs; quality suppliers book out by January")],
+    ],
+  },
+  {
+    id: "turkeys", name: "Turkeys", emoji: "🦃", accent: "#b5451b",
+    months: [
+      [tM("Provide wind-blocking shelter with deep bedding; turkeys are hardier than chickens but still need warmth"), tF("High-protein feed (22–24%) maintains feather condition and body weight through winter"), tH("Keep turkeys SEPARATE from chickens year-round — blackhead disease is turkey-specific and often fatal")],
+      [tB("Order poults now — heritage breeds especially sell out fast; hatcheries book up by March"), tM("Plan and build brooder before poults arrive: needs 100°F at floor level in week 1"), tH("If keeping a breeding flock, toms begin display behavior now — monitor flock dynamics")],
+      [tB("If keeping breeding stock: collect fertile eggs daily for hatching or incubation"), tM("Last reliable month to order from hatcheries for May–June delivery"), tH("Annual health check for breeding birds: weight, feet condition, wattles, and eyes")],
+      [tB("Spring poults begin arriving from hatcheries — brooder must be ready and fully warm"), tM("Brooder setup: 95–100°F at floor level, non-slip surface, turkey starter feed only"), tH("Poults are fragile — they drown in deep water, pile and suffocate; check them very frequently")],
+      [tB("Poults at 4–6 weeks: begin transitioning to an outdoor pen with full predator protection"), tF("Grower feed: 26–28% protein for broad-breasted; 20–22% for heritage breeds"), tH("Keep strictly separate from chickens — blackhead disease is transmitted through chicken droppings")],
+      [tM("Full outdoor range access with predator-proof shelter; turkeys are high-value prey"), tF("Supplement with high-protein treats: mealworms, black soldier fly larvae, insects"), tH("Isolate any bird showing nasal discharge or gurgling sounds — respiratory illness spreads fast")],
+      [tS("Provide shade and fresh water — turkeys handle heat less well than chickens"), tF("Broad-breasted market birds on track: reaching 25–30 lbs at 16–20 weeks"), tH("No medications with withdrawal periods for birds headed to harvest within 60 days")],
+      [tB("Broad-breasted birds approaching processing weight; schedule your butcher date now — they book up"), tM("Heritage breeds continue growing — toms reach 20–25 lbs around 28 weeks"), tH("Stop all feed 12 hours before processing day for clean processing")],
+      [tB("Broad-breasted processing for October pickup orders and early Thanksgiving sales"), tM("Heritage toms at 20–25 lbs by 28+ weeks; hens at 12–16 lbs"), tF("Reduce feed 2 weeks before processing to improve final feed conversion ratio")],
+      [tB("Thanksgiving birds due — schedule processing for week of November 20–22 for fresh delivery"), tM("Final harvest of remaining market birds; record weights and feed conversion for next year"), tH("Keep breeding flock healthy through harvest season; they carry next year's genetics")],
+      [tB("Breeding toms and hens into winter housing; separate toms to reduce aggression on hens"), tM("Deep-clean all grow-out areas; rotate to fresh ground if possible before next spring"), tH("Check for lice and mites as birds enter close winter housing — treat if found")],
+      [tB("Rest breeding flock with minimal disturbance; plan next year's production numbers"), tM("Clean all equipment: brooders, feeders, waterers — store properly for spring"), tF("Reduce breeding flock to maintenance ration through the winter months")],
+    ],
+  },
+  {
+    id: "horses", name: "Horses", emoji: "🐴", accent: "#8a6d30",
+    months: [
+      [tF("Increase hay in cold — horses need 1.5–2% bodyweight in forage daily; more in freezing temps"), tM("Check water source daily; horses will colic before drinking very cold water — heated tank is ideal"), tG("Thick winter coat is a thermometer — only blanket if clipped, old, or body condition is poor")],
+      [tH("Dental float check — worn teeth mean poor hay utilization; critical for horses over 15"), tH("Deworming rotation based on fecal egg count — targeted treatment reduces resistance risk"), tM("Body condition score under the winter coat — if ribs are prominent, add grain supplementation now")],
+      [tG("Spring shedding starts — daily grooming removes dead coat and lets you check for skin issues"), tF("Spring grass CAUTION: introduce slowly over 2–3 weeks; laminitis risk is very high on lush pasture"), tM("Treat mud fever on lower legs: clean, dry, apply zinc oxide barrier cream")],
+      [tH("Spring vaccinations: Eastern/Western EEE, West Nile, Flu/Rhino, Tetanus, Rabies"), tM("Farrier appointment — winter hooves are often long and out of balance; trim or shoe now"), tF("Pregnant mares on fescue pasture: move to non-endophyte fescue 60–90 days before foaling")],
+      [tH("Second deworming rotation per fecal egg count results from spring test"), tM("Pasture rotation begins; rest paddocks 30 days between grazing to reduce parasite load"), tS("Fly protection starts: masks, sheets, leg wraps, permethrin spray applied weekly")],
+      [tS("Fly sheet and mask daily if horse shows irritation from insect pressure"), tF("Electrolytes in water or top-dressed on feed during heat waves to encourage drinking"), tH("Watch for summer sores (Habronema larvae) around wounds and eyes — fly-season wound management")],
+      [tS("Peak heat: ride only in early morning or evening; watch for sweating insufficiency (anhidrosis)"), tF("Minimum 5 gallons of fresh water per day in heat; more for horses in work"), tH("Bot fly eggs appear as yellow dots on legs — remove weekly with a bot knife to break the life cycle")],
+      [tG("Bot egg removal from legs, chest, and jaw — use fine-toothed comb or warm wet cloth"), tH("Fecal egg count before fall deworming decision — use targeted selective treatment only"), tF("Body condition assessment before winter supplement decisions — don't wait until it's obvious")],
+      [tH("Fall deworming per fecal results — treat for bots in late fall after first killing frost"), tH("Fall vaccinations if on a biannual schedule — schedule vet visit now before fall rush"), tM("Frost kills spring laminitis risk; horses can graze more freely once grass stops growing")],
+      [tM("Blanketing decisions based on body condition, clip status, age, and shelter quality"), tF("Introduce hay as grass declines; match hay quality to horse's condition and workload"), tH("Lice check as winter coat grows — easier and cheaper to treat before infestation is severe")],
+      [tM("Mud management around gates, feeders, and water — thrush and mud fever spike in wet-cold"), tH("Thrush check weekly: lift feet, smell — black tarry residue requires treatment"), tF("Adjust grain for reduced workload — horses in light winter work need significantly less grain")],
+      [tM("Ice management at water source — horses will not drink near-frozen water; impaction colic risk"), tH("Year-end vet check: teeth, body condition, Coggins test if traveling"), tB("Plan spring breeding if applicable: schedule ultrasound and book stallion by December or January")],
+    ],
+  },
+];
+
+function AnimalCareCalendar() {
+  const today = new Date();
+  const [selected, setSelected] = useState([]);
+  const [month, setMonth] = useState(today.getMonth());
+  const thisMonth = today.getMonth();
+
+  function toggle(id) {
+    setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+  }
+
+  const activeAnimals = ACC_ANIMALS.filter(a => selected.includes(a.id));
+
+  return (
+    <div className="acc-shell">
+      <div className="acc-sidebar">
+        <div className="acc-sidebar-title">Your Animals</div>
+        <div className="acc-sidebar-sub">Select all that apply</div>
+        <div className="acc-animal-grid">
+          {ACC_ANIMALS.map(a => (
+            <button
+              key={a.id}
+              className={`acc-animal-btn${selected.includes(a.id) ? " acc-animal-btn--on" : ""}`}
+              style={selected.includes(a.id) ? { borderColor: a.accent, background: a.accent + "28" } : {}}
+              onClick={() => toggle(a.id)}
+            >
+              <span className="acc-animal-emoji">{a.emoji}</span>
+              <span className="acc-animal-name">{a.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="acc-main">
+        <div className="acc-month-nav">
+          {ACC_SHORT.map((lbl, i) => (
+            <button
+              key={i}
+              className={`acc-month-pill${month === i ? " acc-month-pill--active" : ""}${thisMonth === i && month !== i ? " acc-month-pill--today" : ""}`}
+              onClick={() => setMonth(i)}
+            >
+              {lbl}
+            </button>
+          ))}
+        </div>
+
+        <div className="acc-month-heading">
+          {ACC_MONTHS[month]}
+          {thisMonth === month && <span className="acc-this-month-tag">This month</span>}
+        </div>
+
+        {selected.length === 0 ? (
+          <div className="acc-empty">
+            <div className="acc-empty-icon">🐾</div>
+            <div className="acc-empty-title">Select your animals</div>
+            <div className="acc-empty-sub">Choose the species you raise on the left to see their monthly care tasks.</div>
+          </div>
+        ) : (
+          <div className="acc-cards">
+            {activeAnimals.map(animal => {
+              const tasks = animal.months[month] || [];
+              return (
+                <div key={animal.id} className="acc-card" style={{ borderLeftColor: animal.accent }}>
+                  <div className="acc-card-header">
+                    <span className="acc-card-emoji">{animal.emoji}</span>
+                    <span className="acc-card-name">{animal.name}</span>
+                    <span className="acc-card-count">{tasks.length} task{tasks.length !== 1 ? "s" : ""}</span>
+                  </div>
+                  {tasks.map((task, i) => {
+                    const tt = ACC_TASK_TYPES[task.type];
+                    return (
+                      <div key={i} className="acc-task" style={{ background: tt.bg }}>
+                        <span className="acc-task-badge" style={{ color: tt.color }}>
+                          {tt.icon} {tt.label}
+                        </span>
+                        <p className="acc-task-text">{task.text}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ============= TOOLS REGISTRY =============
 
 const TOOLS = [
   { id: "planner",          icon: "🌱", category: "Planning",   name: "Homestead Planner",        desc: "Generate a custom plan for your land — animals, vegetables, costs, and more.",                      status: "live" },
   { id: "preservation",     icon: "🫙", category: "Planning",   name: "Food Preservation Planner", desc: "Build a canning, freezing, and fermenting schedule around your harvest.",                           status: "soon" },
-  { id: "animal-calendar",  icon: "📅", category: "Planning",   name: "Animal Care Calendar",      desc: "Monthly tasks and reminders tailored to each species on your property.",                           status: "soon" },
+  { id: "animal-calendar",  icon: "📅", category: "Planning",   name: "Animal Care Calendar",      desc: "Monthly tasks and reminders tailored to each species on your property.",                           status: "live" },
   { id: "bed-designer",     icon: "🗺️", category: "Planning",   name: "Garden Bed Designer",       desc: "Visually design and lay out your garden beds with drag-and-drop.",                                 status: "soon" },
   { id: "crop-rotation",    icon: "🔄", category: "Planning",   name: "Crop Rotation Planner",     desc: "Plan year-by-year bed rotation to maintain soil health and reduce pests.",                         status: "soon" },
   { id: "break-even",       icon: "📊", category: "Financial",  name: "Break-Even Calculator",     desc: "Find out when your homestead investment starts paying for itself.",                                 status: "live" },
@@ -3015,8 +3584,9 @@ function AppShell() {
           <button className="tool-nav-back" onClick={() => setView("home")}>← All Tools</button>
           <span className="tool-nav-label">{currentTool?.icon} {currentTool?.name}</span>
         </div>
-        {view === "planner"    && <HomesteadPlanner />}
-        {view === "break-even" && <BreakEvenCalculator />}
+        {view === "planner"         && <HomesteadPlanner />}
+        {view === "break-even"      && <BreakEvenCalculator />}
+        {view === "animal-calendar" && <AnimalCareCalendar />}
       </>
     );
   }
