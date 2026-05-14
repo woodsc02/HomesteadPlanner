@@ -1595,12 +1595,23 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+.be-item-label-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 .be-item-label {
   font-size: 13px;
   color: var(--bark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.be-item-est {
+  font-size: 10px;
+  color: var(--sage);
+  font-weight: 400;
+  margin-top: 1px;
 }
 .be-item-amt {
   display: flex;

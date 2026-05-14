@@ -2663,28 +2663,28 @@ function HomesteadPlanner() {
 // ============= BREAK-EVEN CALCULATOR =============
 
 const BE_STARTUP = [
-  { id: "s-land",       label: "Land prep & clearing",    amt: 2000 },
-  { id: "s-fencing",    label: "Fencing",                 amt: 1500 },
-  { id: "s-shelter",    label: "Coop / barn / shelter",   amt: 800  },
-  { id: "s-equipment",  label: "Equipment & tools",        amt: 600  },
-  { id: "s-animals",    label: "Initial animals",          amt: 400  },
-  { id: "s-seeds",      label: "Seeds & starter plants",  amt: 150  },
-  { id: "s-irrigation", label: "Irrigation system",        amt: 500  },
+  { id: "s-land",       label: "Land prep & clearing",    amt: 2000, est: "$500–$5,000"   },
+  { id: "s-fencing",    label: "Fencing",                 amt: 1500, est: "$500–$4,000"   },
+  { id: "s-shelter",    label: "Coop / barn / shelter",   amt: 800,  est: "$300–$3,000"   },
+  { id: "s-equipment",  label: "Equipment & tools",        amt: 600,  est: "$200–$1,500"   },
+  { id: "s-animals",    label: "Initial animals",          amt: 400,  est: "$100–$1,200"   },
+  { id: "s-seeds",      label: "Seeds & starter plants",  amt: 150,  est: "$50–$400"      },
+  { id: "s-irrigation", label: "Irrigation system",        amt: 500,  est: "$150–$2,000"   },
 ];
 const BE_EXPENSES = [
-  { id: "e-feed",       label: "Animal feed",              amt: 80  },
-  { id: "e-vet",        label: "Vet & healthcare",         amt: 30  },
-  { id: "e-supplies",   label: "Seeds & supplies",         amt: 40  },
-  { id: "e-utilities",  label: "Utilities (water, power)", amt: 50  },
-  { id: "e-fuel",       label: "Fuel & transport",         amt: 30  },
+  { id: "e-feed",       label: "Animal feed",              amt: 80,   est: "$30–$250/mo"   },
+  { id: "e-vet",        label: "Vet & healthcare",         amt: 30,   est: "$10–$100/mo"   },
+  { id: "e-supplies",   label: "Seeds & supplies",         amt: 40,   est: "$20–$120/mo"   },
+  { id: "e-utilities",  label: "Utilities (water, power)", amt: 50,   est: "$20–$150/mo"   },
+  { id: "e-fuel",       label: "Fuel & transport",         amt: 30,   est: "$15–$80/mo"    },
 ];
 const BE_INCOME = [
-  { id: "i-eggs",       label: "Egg sales",                amt: 60  },
-  { id: "i-produce",    label: "Fresh produce",            amt: 100 },
-  { id: "i-meat",       label: "Meat & poultry",           amt: 80  },
-  { id: "i-dairy",      label: "Dairy products",           amt: 50  },
-  { id: "i-herbs",      label: "Herbs & value-adds",       amt: 40  },
-  { id: "i-market",     label: "Farmers market total",     amt: 120 },
+  { id: "i-eggs",       label: "Egg sales",                amt: 60,   est: "$20–$150/mo"   },
+  { id: "i-produce",    label: "Fresh produce",            amt: 100,  est: "$50–$350/mo"   },
+  { id: "i-meat",       label: "Meat & poultry",           amt: 80,   est: "$30–$250/mo"   },
+  { id: "i-dairy",      label: "Dairy products",           amt: 50,   est: "$20–$180/mo"   },
+  { id: "i-herbs",      label: "Herbs & value-adds",       amt: 40,   est: "$15–$120/mo"   },
+  { id: "i-market",     label: "Farmers market total",     amt: 120,  est: "$50–$500/mo"   },
 ];
 
 function beInitItems(presets) {
@@ -2697,7 +2697,10 @@ function BeItemRow({ item, onChange, onRemove }) {
       <label className="be-item-toggle">
         <input type="checkbox" checked={item.enabled}
           onChange={e => onChange({ ...item, enabled: e.target.checked })} />
-        <span className="be-item-label">{item.label}</span>
+        <div className="be-item-label-wrap">
+          <span className="be-item-label">{item.label}</span>
+          {item.est && <span className="be-item-est">est. {item.est}</span>}
+        </div>
       </label>
       <div className="be-item-amt">
         <span className="be-item-dollar">$</span>
