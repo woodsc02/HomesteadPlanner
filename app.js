@@ -2660,4 +2660,365 @@ function HomesteadPlanner() {
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<HomesteadPlanner />);
+// ============= BREAK-EVEN CALCULATOR =============
+
+const BE_STARTUP = [
+  { id: "s-land",       label: "Land prep & clearing",    amt: 2000 },
+  { id: "s-fencing",    label: "Fencing",                 amt: 1500 },
+  { id: "s-shelter",    label: "Coop / barn / shelter",   amt: 800  },
+  { id: "s-equipment",  label: "Equipment & tools",        amt: 600  },
+  { id: "s-animals",    label: "Initial animals",          amt: 400  },
+  { id: "s-seeds",      label: "Seeds & starter plants",  amt: 150  },
+  { id: "s-irrigation", label: "Irrigation system",        amt: 500  },
+];
+const BE_EXPENSES = [
+  { id: "e-feed",       label: "Animal feed",              amt: 80  },
+  { id: "e-vet",        label: "Vet & healthcare",         amt: 30  },
+  { id: "e-supplies",   label: "Seeds & supplies",         amt: 40  },
+  { id: "e-utilities",  label: "Utilities (water, power)", amt: 50  },
+  { id: "e-fuel",       label: "Fuel & transport",         amt: 30  },
+];
+const BE_INCOME = [
+  { id: "i-eggs",       label: "Egg sales",                amt: 60  },
+  { id: "i-produce",    label: "Fresh produce",            amt: 100 },
+  { id: "i-meat",       label: "Meat & poultry",           amt: 80  },
+  { id: "i-dairy",      label: "Dairy products",           amt: 50  },
+  { id: "i-herbs",      label: "Herbs & value-adds",       amt: 40  },
+  { id: "i-market",     label: "Farmers market total",     amt: 120 },
+];
+
+function beInitItems(presets) {
+  return presets.map(p => ({ ...p, enabled: false, custom: false }));
+}
+
+function BeItemRow({ item, onChange, onRemove }) {
+  return (
+    <div className="be-item-row">
+      <label className="be-item-toggle">
+        <input type="checkbox" checked={item.enabled}
+          onChange={e => onChange({ ...item, enabled: e.target.checked })} />
+        <span className="be-item-label">{item.label}</span>
+      </label>
+      <div className="be-item-amt">
+        <span className="be-item-dollar">$</span>
+        <input type="number" min="0" value={item.amt} disabled={!item.enabled}
+          onChange={e => onChange({ ...item, amt: Math.max(0, Number(e.target.value)) })}
+          className="be-amt-input" />
+      </div>
+      {item.custom && (
+        <button className="be-remove-btn" onClick={onRemove} title="Remove">×</button>
+      )}
+    </div>
+  );
+}
+
+function BeAddRow({ placeholder, onAdd }) {
+  const [label, setLabel] = useState("");
+  const [amt, setAmt] = useState("");
+  function commit() {
+    if (!label.trim()) return;
+    onAdd({ id: `c-${Date.now()}`, label: label.trim(), amt: Number(amt) || 0, enabled: true, custom: true });
+    setLabel(""); setAmt("");
+  }
+  return (
+    <div className="be-add-row">
+      <input className="be-add-label-input" placeholder={placeholder}
+        value={label} onChange={e => setLabel(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && commit()} />
+      <div className="be-item-amt">
+        <span className="be-item-dollar">$</span>
+        <input type="number" min="0" placeholder="0" value={amt}
+          onChange={e => setAmt(e.target.value)} className="be-amt-input"
+          onKeyDown={e => e.key === "Enter" && commit()} />
+      </div>
+      <button className="be-add-btn" onClick={commit}>+ Add</button>
+    </div>
+  );
+}
+
+function BeChart({ netByMonth, breakEvenMonth }) {
+  const W = 300, H = 150;
+  const P = { t: 12, r: 10, b: 28, l: 46 };
+  const cW = W - P.l - P.r, cH = H - P.t - P.b;
+  const n = netByMonth.length;
+  const minV = Math.min(...netByMonth, 0);
+  const maxV = Math.max(...netByMonth, 0);
+  const range = maxV - minV || 1;
+  const x = i  => P.l + (i / (n - 1)) * cW;
+  const y = v  => P.t + cH - ((v - minV) / range) * cH;
+  const zy = y(0);
+  const pts = netByMonth.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const area = `M${x(0).toFixed(1)},${zy} ` +
+    netByMonth.map((v, i) => `L${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ") +
+    ` L${x(n-1).toFixed(1)},${zy} Z`;
+  const xLabels = [0,12,24,36,48,60].filter(m => m < n);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:"auto", display:"block" }}>
+      <defs>
+        <clipPath id="be-above"><rect x={P.l} y={P.t} width={cW} height={Math.max(0,zy-P.t)} /></clipPath>
+        <clipPath id="be-below"><rect x={P.l} y={zy} width={cW} height={Math.max(0,cH-(zy-P.t))} /></clipPath>
+      </defs>
+      <path d={area} fill="rgba(74,94,58,0.13)"  clipPath="url(#be-above)" />
+      <path d={area} fill="rgba(181,69,27,0.10)" clipPath="url(#be-below)" />
+      <line x1={P.l} y1={zy} x2={W-P.r} y2={zy} stroke="rgba(92,61,46,0.22)" strokeWidth="1" strokeDasharray="3 3" />
+      <polyline points={pts} fill="none" stroke="#4a5e3a" strokeWidth="2" strokeLinejoin="round" />
+      {breakEvenMonth !== null && breakEvenMonth < n && (
+        <g>
+          <line x1={x(breakEvenMonth)} y1={P.t} x2={x(breakEvenMonth)} y2={H-P.b}
+            stroke="#e8b84b" strokeWidth="1.5" strokeDasharray="3 3" />
+          <circle cx={x(breakEvenMonth)} cy={zy} r="4" fill="#e8b84b" stroke="white" strokeWidth="1.5" />
+        </g>
+      )}
+      {xLabels.map(m => (
+        <text key={m} x={x(m)} y={H-6} textAnchor="middle" fontSize="9" fill="#5c3d2e" fontFamily="Lato,sans-serif">
+          {m === 0 ? "Now" : `${m/12}yr`}
+        </text>
+      ))}
+      {[minV, 0, maxV].filter((v,i,a) => a.findIndex(u=>Math.abs(u-v)<range*0.04)===i).map(v => (
+        <text key={v} x={P.l-4} y={y(v)+3} textAnchor="end" fontSize="8" fill="#5c3d2e" fontFamily="Lato,sans-serif">
+          {v===0 ? "$0" : v>0 ? `+$${(v/1000).toFixed(v<10000?1:0)}k` : `-$${(-v/1000).toFixed(-v<10000?1:0)}k`}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+function BreakEvenCalculator() {
+  const [startup,  setStartup]  = useState(() => beInitItems(BE_STARTUP));
+  const [expenses, setExpenses] = useState(() => beInitItems(BE_EXPENSES));
+  const [income,   setIncome]   = useState(() => beInitItems(BE_INCOME));
+
+  const upd = (setter, id, next) => setter(arr => arr.map(it => it.id === id ? next : it));
+  const rem = (setter, id)       => setter(arr => arr.filter(it => it.id !== id));
+  const add = (setter, item)     => setter(arr => [...arr, item]);
+
+  const totalStartup   = startup.filter(i=>i.enabled).reduce((s,i)=>s+i.amt,0);
+  const monthlyExpense = expenses.filter(i=>i.enabled).reduce((s,i)=>s+i.amt,0);
+  const monthlyIncome  = income.filter(i=>i.enabled).reduce((s,i)=>s+i.amt,0);
+  const monthlyNet     = monthlyIncome - monthlyExpense;
+  const beMonth        = monthlyNet > 0 ? Math.ceil(totalStartup / monthlyNet) : null;
+  const MONTHS         = 61;
+  const netByMonth     = Array.from({length:MONTHS},(_,m) => monthlyIncome*m - monthlyExpense*m - totalStartup);
+
+  const fmt = n => "$" + Math.abs(Math.round(n)).toLocaleString();
+  const fmtNet = n => (n>=0?"+":"-") + fmt(n);
+  const fmtDur = m => {
+    if (m <= 0) return "Already profitable";
+    const y = Math.floor(m/12), mo = m%12;
+    return [y&&`${y} yr${y>1?"s":""}`, mo&&`${mo} mo`].filter(Boolean).join(" ");
+  };
+
+  const hasAny = totalStartup>0 || monthlyNet!==0;
+
+  return (
+    <div className="be-shell">
+
+      {/* ── INPUTS ── */}
+      <div className="be-inputs">
+
+        <div className="be-section">
+          <div className="be-section-header">
+            <span className="be-section-icon">🏗️</span>
+            <div>
+              <div className="be-section-title">Startup Costs</div>
+              <div className="be-section-sub">One-time investments to get started</div>
+            </div>
+            <div className="be-section-total">{fmt(totalStartup)}</div>
+          </div>
+          {startup.map(it => (
+            <BeItemRow key={it.id} item={it}
+              onChange={next => upd(setStartup, it.id, next)}
+              onRemove={() => rem(setStartup, it.id)} />
+          ))}
+          <BeAddRow placeholder="e.g. Water tank" onAdd={it => add(setStartup, it)} />
+        </div>
+
+        <div className="be-section">
+          <div className="be-section-header">
+            <span className="be-section-icon">📉</span>
+            <div>
+              <div className="be-section-title">Monthly Expenses</div>
+              <div className="be-section-sub">Recurring costs every month</div>
+            </div>
+            <div className="be-section-total">{fmt(monthlyExpense)}<span className="be-section-total-unit">/mo</span></div>
+          </div>
+          {expenses.map(it => (
+            <BeItemRow key={it.id} item={it}
+              onChange={next => upd(setExpenses, it.id, next)}
+              onRemove={() => rem(setExpenses, it.id)} />
+          ))}
+          <BeAddRow placeholder="e.g. Insurance" onAdd={it => add(setExpenses, it)} />
+        </div>
+
+        <div className="be-section">
+          <div className="be-section-header">
+            <span className="be-section-icon">📈</span>
+            <div>
+              <div className="be-section-title">Monthly Income</div>
+              <div className="be-section-sub">What your homestead earns</div>
+            </div>
+            <div className="be-section-total be-section-total--income">{fmt(monthlyIncome)}<span className="be-section-total-unit">/mo</span></div>
+          </div>
+          {income.map(it => (
+            <BeItemRow key={it.id} item={it}
+              onChange={next => upd(setIncome, it.id, next)}
+              onRemove={() => rem(setIncome, it.id)} />
+          ))}
+          <BeAddRow placeholder="e.g. CSA shares" onAdd={it => add(setIncome, it)} />
+        </div>
+
+      </div>
+
+      {/* ── RESULTS ── */}
+      <div className="be-results">
+        <div className="be-results-inner">
+          <div className="be-results-title">Break-Even Analysis</div>
+
+          {!hasAny ? (
+            <p className="be-empty">Check items on the left to build your projection.</p>
+          ) : (
+            <>
+              <div className="be-metric-row">
+                <div className="be-metric">
+                  <div className="be-metric-label">Monthly Net</div>
+                  <div className={`be-metric-value ${monthlyNet>=0?"be-pos":"be-neg"}`}>
+                    {fmtNet(monthlyNet)}
+                  </div>
+                </div>
+                <div className="be-metric">
+                  <div className="be-metric-label">Startup Cost</div>
+                  <div className="be-metric-value">{fmt(totalStartup)}</div>
+                </div>
+              </div>
+
+              <div className="be-be-box">
+                {beMonth === null ? (
+                  <div className="be-be-impossible">
+                    <div className="be-be-dash">—</div>
+                    <div className="be-be-note">
+                      {monthlyNet < 0
+                        ? "Monthly expenses exceed income — reduce costs or add revenue"
+                        : "Add startup costs and some income to calculate break-even"}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="be-be-num">{fmtDur(beMonth)}</div>
+                    <div className="be-be-label">to break even</div>
+                    <div className="be-be-sub">
+                      Month {beMonth} · {new Date(Date.now() + beMonth*30.44*24*60*60*1000)
+                        .toLocaleDateString("en-US",{month:"long",year:"numeric"})}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="be-chart-label">Net Position Over 5 Years</div>
+              <BeChart netByMonth={netByMonth} breakEvenMonth={beMonth} />
+
+              <div className="be-proj-grid">
+                {[[12,"1 Year"],[36,"3 Years"],[60,"5 Years"]].map(([m,lbl]) => {
+                  const v = netByMonth[m];
+                  return (
+                    <div key={m} className={`be-proj-card ${v>=0?"be-pos-card":"be-neg-card"}`}>
+                      <div className="be-proj-label">{lbl}</div>
+                      <div className="be-proj-val">{fmtNet(v)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============= TOOLS REGISTRY =============
+
+const TOOLS = [
+  { id: "planner",          icon: "🌱", category: "Planning",   name: "Homestead Planner",        desc: "Generate a custom plan for your land — animals, vegetables, costs, and more.",                      status: "live" },
+  { id: "preservation",     icon: "🫙", category: "Planning",   name: "Food Preservation Planner", desc: "Build a canning, freezing, and fermenting schedule around your harvest.",                           status: "soon" },
+  { id: "animal-calendar",  icon: "📅", category: "Planning",   name: "Animal Care Calendar",      desc: "Monthly tasks and reminders tailored to each species on your property.",                           status: "soon" },
+  { id: "bed-designer",     icon: "🗺️", category: "Planning",   name: "Garden Bed Designer",       desc: "Visually design and lay out your garden beds with drag-and-drop.",                                 status: "soon" },
+  { id: "crop-rotation",    icon: "🔄", category: "Planning",   name: "Crop Rotation Planner",     desc: "Plan year-by-year bed rotation to maintain soil health and reduce pests.",                         status: "soon" },
+  { id: "break-even",       icon: "📊", category: "Financial",  name: "Break-Even Calculator",     desc: "Find out when your homestead investment starts paying for itself.",                                 status: "live" },
+  { id: "budget",           icon: "💰", category: "Financial",  name: "Budget Tracker",            desc: "Track income vs. expenses across your whole homestead operation.",                                  status: "soon" },
+  { id: "pricing",          icon: "🏷️", category: "Financial",  name: "Produce Pricing",           desc: "Calculate what to charge at the farmers market to cover costs and profit.",                        status: "soon" },
+];
+
+// ============= HOMEPAGE =============
+
+function ToolCard({ tool, onSelect }) {
+  return (
+    <div
+      className={`tool-card${tool.status === "soon" ? " tool-card--soon" : ""}`}
+      onClick={() => tool.status === "live" && onSelect(tool.id)}
+      role={tool.status === "live" ? "button" : undefined}
+    >
+      <span className={`tool-card-badge tool-card-badge--${tool.status === "live" ? "live" : "soon"}`}>
+        {tool.status === "live" ? "Live" : "Coming Soon"}
+      </span>
+      <span className="tool-card-icon">{tool.icon}</span>
+      <div className="tool-card-category">{tool.category}</div>
+      <div className="tool-card-name">{tool.name}</div>
+      <div className="tool-card-desc">{tool.desc}</div>
+    </div>
+  );
+}
+
+function HomePage({ onSelect }) {
+  const planningTools  = TOOLS.filter(t => t.category === "Planning");
+  const financialTools = TOOLS.filter(t => t.category === "Financial");
+
+  return (
+    <>
+      <div className="home-hero">
+        <div className="home-hero-badge">Homestead Toolkit</div>
+        <h1>Tools for the<br/><em>Modern Homesteader</em></h1>
+        <p>Everything you need to plan, grow, and sustain your homestead — from land planning to financial decisions.</p>
+      </div>
+      <div className="tools-section">
+        <div className="tools-section-title">Planning Tools</div>
+        <div className="tools-section-sub">Design, schedule, and manage your land and animals</div>
+        <div className="tools-grid">
+          {planningTools.map(tool => <ToolCard key={tool.id} tool={tool} onSelect={onSelect} />)}
+        </div>
+
+        <div className="tools-section-title">Financial Tools</div>
+        <div className="tools-section-sub">Budget, price, and track your homestead finances</div>
+        <div className="tools-grid">
+          {financialTools.map(tool => <ToolCard key={tool.id} tool={tool} onSelect={onSelect} />)}
+        </div>
+      </div>
+      <div className="home-footer">
+        🌿 Homestead Toolkit · Built for people who grow their own
+      </div>
+    </>
+  );
+}
+
+// ============= APP SHELL (ROUTER) =============
+
+function AppShell() {
+  const [view, setView] = useState("home");
+  const currentTool = TOOLS.find(t => t.id === view);
+
+  if (view !== "home") {
+    return (
+      <>
+        <div className="tool-nav">
+          <button className="tool-nav-back" onClick={() => setView("home")}>← All Tools</button>
+          <span className="tool-nav-label">{currentTool?.icon} {currentTool?.name}</span>
+        </div>
+        {view === "planner"    && <HomesteadPlanner />}
+        {view === "break-even" && <BreakEvenCalculator />}
+      </>
+    );
+  }
+
+  return <HomePage onSelect={setView} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AppShell />);
