@@ -1,10 +1,12 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Property Layout Planner · Homestead Toolkit</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://maps.googleapis.com">
+  <link rel="preconnect" href="https://maps.gstatic.com">
   <style>
     /* ===== Property Planner – page-specific styles ===== */
 
@@ -105,6 +107,32 @@
     }
     @media (max-width: 600px) {
       #map-container { height: 380px; }
+    }
+
+    /* Loading skeleton overlay — shown while satellite tiles are fetching */
+    #map-skeleton {
+      position: absolute;
+      inset: 0;
+      background: #e5e0d5;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 2;
+      animation: ppPulse 1.4s ease-in-out infinite;
+    }
+    #map-skeleton .pp-map-icon { font-size: 52px; opacity: 0.75; }
+    #map-skeleton p {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--bark);
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+    @keyframes ppPulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.6; }
     }
 
     /* ── Errors ── */
@@ -282,6 +310,10 @@
           <p>Enter your address above to view your property on satellite</p>
         </div>
         <div id="map-div"></div>
+        <div id="map-skeleton">
+          <span class="pp-map-icon">🛰️</span>
+          <p>Loading satellite view…</p>
+        </div>
       </div>
     </div>
 
@@ -348,9 +380,6 @@
 
   </div><!-- /.app -->
 
-  <!-- Google Maps JavaScript API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCk_S4uftIoqX1u6wD4pcWRrOHoDVzEtA0&libraries=places"></script>
-
   <script>
     // ── Config ──────────────────────────────────────────────────────────────
     // Replace the value below with your Cloudflare Worker URL
@@ -383,7 +412,6 @@
 
     // ── Init ─────────────────────────────────────────────────────────────────
     (function init() {
-      geocoder = new google.maps.Geocoder();
       buildFeatureGrid();
 
       document.getElementById('load-map-btn').addEventListener('click', loadMap);
@@ -409,6 +437,25 @@
       });
     }
 
+    // --- Lazy Maps loader ---
+    function loadGoogleMapsScript() {
+      return new Promise(function(resolve) {
+        if (window.google && window.google.maps) { return resolve(); }
+        var mapsUrl = [
+          'https://maps.googleapis.com/maps/api/js',
+          '?key=AIzaSyCk_S4uftIoqX1u6wD4pcWRrOHoDVzEtA0',
+          '&libraries=places',
+          '&callback=initMapCallback'
+        ].join('');
+        var script = document.createElement('script');
+        script.src = mapsUrl;
+        script.async = true;
+        script.defer = true;
+        window.initMapCallback = resolve;
+        document.head.appendChild(script);
+      });
+    }
+
     // ── Map ───────────────────────────────────────────────────────────────────
     function loadMap() {
       var address = document.getElementById('address-input').value.trim();
@@ -423,37 +470,55 @@
       btn.disabled = true;
       btn.textContent = 'Loading…';
 
-      geocoder.geocode({ address: address }, function(results, status) {
-        btn.disabled = false;
-        btn.textContent = 'Load My Property';
+      // Show skeleton immediately so the UI never looks frozen
+      document.getElementById('map-placeholder').style.display = 'none';
+      document.getElementById('map-skeleton').style.display = 'flex';
+      var mapDiv = document.getElementById('map-div');
+      mapDiv.style.display = 'block';
 
-        if (status !== 'OK' || !results || !results[0]) {
-          showError(
-            'map-error',
-            "Couldn’t locate that address. Try adding a city and state, or use a full street address."
-          );
-          return;
-        }
+      loadGoogleMapsScript().then(function() {
+        // Ensure geocoder exists (Maps API now loaded)
+        if (!geocoder) geocoder = new google.maps.Geocoder();
 
-        var location = results[0].geometry.location;
-
-        // Show map div, hide placeholder
-        document.getElementById('map-placeholder').style.display = 'none';
-        var mapDiv = document.getElementById('map-div');
-        mapDiv.style.display = 'block';
-
+        // Initialize the map at a low zoom (fewer tiles → faster first paint)
+        // or reuse the existing instance, also dropping to zoom 15 for quick refresh
         if (!map) {
           map = new google.maps.Map(mapDiv, {
-            center: location,
-            zoom: 17,
+            center: { lat: 39.5, lng: -98.35 }, // center of US — visible immediately
+            zoom: 15,
             mapTypeId: google.maps.MapTypeId.SATELLITE,
             tilt: 0,
           });
         } else {
-          map.setCenter(location);
-          map.setZoom(17);
+          map.setZoom(15);
           map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
         }
+
+        // Geocode in parallel while map tiles are already rendering
+        geocoder.geocode({ address: address }, function(results, status) {
+          btn.disabled = false;
+          btn.textContent = 'Load My Property';
+
+          if (status !== 'OK' || !results || !results[0]) {
+            document.getElementById('map-skeleton').style.display = 'none';
+            document.getElementById('map-div').style.display = 'none';
+            document.getElementById('map-placeholder').style.display = 'flex';
+            showError(
+              'map-error',
+              "Couldn't locate that address. Try adding a city and state, or use a full street address."
+            );
+            return;
+          }
+
+          // Pan to the geocoded location (map is already showing tiles)
+          map.panTo(results[0].geometry.location);
+
+          // Once the satellite tiles finish loading at this location, zoom in and clear the skeleton
+          google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+            map.setZoom(18);
+            document.getElementById('map-skeleton').style.display = 'none';
+          });
+        });
       });
     }
 
