@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Layout Planner · Homestead Toolkit</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== Property Planner – page-specific styles ===== */
+
+    a.tool-nav-back {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .pp-header {
+      text-align: center;
+      padding: 40px 16px 28px;
+    }
+    .pp-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5vw, 46px);
+      color: var(--soil);
+      line-height: 1.1;
+      margin: 16px 0 14px;
+    }
+    .pp-header h1 em {
+      color: var(--moss);
+      font-style: italic;
+    }
+    .pp-header p {
+      font-size: 16px;
+      color: var(--bark);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .pp-step-label {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 6px;
+    }
+
+    /* ── Address row ── */
+    .pp-address-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .pp-address-row input[type="text"] {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .pp-load-btn {
+      width: auto !important;
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 12px 22px !important;
+      font-size: 15px !important;
+    }
+    @media (max-width: 560px) {
+      .pp-address-row { flex-direction: column; }
+      .pp-load-btn { width: 100% !important; justify-content: center; }
+    }
+
+    /* ── Map ── */
+    #map-container {
+      width: 100%;
+      height: 600px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1.5px solid rgba(92,61,46,0.12);
+      position: relative;
+      background: #e5e0d5;
+      margin-top: 4px;
+    }
+    #map-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    #map-placeholder .pp-map-icon { font-size: 52px; }
+    #map-placeholder p {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--bark);
+      margin: 0;
+    }
+    #map-div {
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      #map-container { height: 380px; }
+    }
+
+    /* ── Errors ── */
+    .pp-error {
+      background: rgba(181,69,27,0.08);
+      border: 1px solid rgba(181,69,27,0.25);
+      border-radius: 8px;
+      color: var(--rust);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 14px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Feature chips ── */
+    .pp-feature-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .pp-chip-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .pp-chip-wrap input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+    .pp-chip-wrap .chip { cursor: pointer; margin: 0; }
+    .pp-chip-wrap input[type="checkbox"]:checked + .chip {
+      background: var(--moss);
+      border-color: var(--moss);
+      color: white;
+    }
+
+    /* ── Two-column inputs row ── */
+    .pp-inputs-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 500px) {
+      .pp-inputs-row { grid-template-columns: 1fr; }
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+
+    /* ── Generate section ── */
+    .pp-generate-btn {
+      font-size: 17px !important;
+      padding: 18px 32px !important;
+      letter-spacing: 0.3px;
+    }
+
+    .pp-spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: ppSpin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes ppSpin { to { transform: rotate(360deg); } }
+
+    /* ── Results panel ── */
+    #results-panel {
+      background: var(--cream);
+      border: 1.5px solid rgba(92,61,46,0.12);
+      border-radius: 14px;
+      padding: 26px 28px 22px;
+      margin-top: 22px;
+    }
+    #results-panel h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--soil);
+      margin: 26px 0 8px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(92,61,46,0.1);
+    }
+    #results-panel h2:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+    #results-panel h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      color: var(--moss);
+      margin: 16px 0 6px;
+    }
+    #results-panel p {
+      font-size: 15px;
+      color: var(--soil);
+      line-height: 1.72;
+      margin-bottom: 10px;
+    }
+    #results-panel ul,
+    #results-panel ol {
+      margin: 4px 0 12px 22px;
+    }
+    #results-panel li {
+      font-size: 14px;
+      color: var(--bark);
+      line-height: 1.65;
+      margin-bottom: 5px;
+    }
+    #results-panel strong { color: var(--soil); }
+
+    .pp-results-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(92,61,46,0.1);
+    }
+    .pp-results-actions .btn { flex-shrink: 0; }
+
+    @media (max-width: 480px) {
+      #results-panel { padding: 18px 16px; }
+      .pp-results-actions { flex-direction: column; }
+      .pp-results-actions .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky tool nav -->
+  <div class="tool-nav">
+    <a href="index.html" class="tool-nav-back">← All Tools</a>
+    <span class="tool-nav-label">📍 Property Layout Planner</span>
+  </div>
+
+  <div class="app">
+
+    <!-- Page header -->
+    <div class="pp-header">
+      <span class="header-badge">Property Planning</span>
+      <h1>Property Layout <em>Planner</em></h1>
+      <p>Load your land on satellite view, choose your homestead features, and get an AI-powered layout recommendation tailored to your property.</p>
+    </div>
+
+    <!-- ── Section 1: Address & Map ────────────────────────────────── -->
+    <div class="card">
+      <span class="pp-step-label">Step 1 — Your Property</span>
+      <div class="card-title">Find Your Land</div>
+      <div class="card-subtitle">Enter your property address to pull up a satellite view</div>
+
+      <div class="pp-address-row">
+        <input
+          type="text"
+          id="address-input"
+          placeholder="123 Farm Rd, Rexburg, Idaho"
+          autocomplete="street-address"
+        />
+        <button class="btn btn-primary pp-load-btn" id="load-map-btn">
+          Load My Property
+        </button>
+      </div>
+
+      <div id="map-error" class="pp-error" style="display:none"></div>
+
+      <div id="map-container">
+        <div id="map-placeholder">
+          <span class="pp-map-icon">🛰️</span>
+          <p>Enter your address above to view your property on satellite</p>
+        </div>
+        <div id="map-div"></div>
+      </div>
+    </div>
+
+    <!-- ── Section 2: Feature Selection ───────────────────────────── -->
+    <div class="card">
+      <span class="pp-step-label">Step 2 — Homestead Features</span>
+      <div class="card-title">What Are You Building?</div>
+      <div class="card-subtitle">Select every feature you plan to include on your property</div>
+
+      <div class="pp-feature-grid" id="feature-grid">
+        <!-- Chips are injected by JS -->
+      </div>
+
+      <div class="pp-inputs-row">
+        <div>
+          <label for="custom-features">Custom features (comma separated)</label>
+          <input
+            type="text"
+            id="custom-features"
+            placeholder="e.g. Corn maze, lavender field"
+          />
+        </div>
+        <div>
+          <label for="acreage">Property size in acres</label>
+          <input
+            type="number"
+            id="acreage"
+            placeholder="e.g. 5"
+            min="0.1"
+            step="0.5"
+          />
+        </div>
+      </div>
+
+      <label for="land-notes">Notes about your land</label>
+      <textarea
+        id="land-notes"
+        placeholder="e.g. Existing barn on north side, seasonal creek runs through the east field, road access from south, gentle slope toward the back…"
+      ></textarea>
+
+      <div id="features-error" class="pp-error" style="display:none"></div>
+    </div>
+
+    <!-- ── Section 3: AI Recommendation ───────────────────────────── -->
+    <div class="card">
+      <span class="pp-step-label">Step 3 — AI Layout Recommendation</span>
+      <div class="card-title">Generate Your Plan</div>
+      <div class="card-subtitle">Get a detailed spatial layout tailored to your land and selected features</div>
+
+      <button class="btn btn-primary pp-generate-btn" id="generate-btn">
+        Generate My Layout Plan
+      </button>
+
+      <div id="worker-error" class="pp-error" style="display:none"></div>
+
+      <div id="results-panel" style="display:none">
+        <div id="results-content"></div>
+        <div class="pp-results-actions">
+          <button class="btn btn-secondary" id="copy-btn">Copy Plan</button>
+          <button class="btn btn-secondary" id="reset-btn">Start Over</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.app -->
+
+  <!-- Google Maps JavaScript API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCk_S4uftIoqX1u6wD4pcWRrOHoDVzEtA0&libraries=places"></script>
+
+  <script>
+    // ── Config ──────────────────────────────────────────────────────────────
+    // Replace the value below with your Cloudflare Worker URL
+    const WORKER_URL = 'https://shomestead-ai-proxy.woodscodyb.workers.dev/';
+
+    // ── Feature list ────────────────────────────────────────────────────────
+    const FEATURES = [
+      { label: 'Petting Zoo / Animal Pens',   emoji: '🐮' },
+      { label: 'Flower Field',                emoji: '🌸' },
+      { label: 'Apple Orchard / Fruit Trees', emoji: '🍎' },
+      { label: 'Pumpkin Patch',               emoji: '🎃' },
+      { label: 'Hay Maze',                    emoji: '🌾' },
+      { label: 'Haunted Maze',                emoji: '👻' },
+      { label: 'Vegetable Garden',            emoji: '🥕' },
+      { label: 'Greenhouse',                  emoji: '🪴' },
+      { label: 'Parking Area',                emoji: '🅿️' },
+      { label: 'Picnic / Rest Area',          emoji: '🧺' },
+      { label: 'Farm Stand / Shop',           emoji: '🏪' },
+      { label: 'Beehives',                    emoji: '🐝' },
+      { label: 'Pond or Water Feature',       emoji: '🏞️' },
+      { label: 'Composting Area',             emoji: '♻️' },
+      { label: 'Storage / Equipment Barn',    emoji: '🏚️' },
+    ];
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let map = null;
+    let geocoder = null;
+    let currentAddress = '';
+    let rawPlanText = '';
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    (function init() {
+      geocoder = new google.maps.Geocoder();
+      buildFeatureGrid();
+
+      document.getElementById('load-map-btn').addEventListener('click', loadMap);
+      document.getElementById('generate-btn').addEventListener('click', generatePlan);
+      document.getElementById('copy-btn').addEventListener('click', copyPlan);
+      document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+      document.getElementById('address-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') loadMap();
+      });
+    })();
+
+    function buildFeatureGrid() {
+      var grid = document.getElementById('feature-grid');
+      FEATURES.forEach(function(f, i) {
+        var id = 'feat-' + i;
+        var wrap = document.createElement('span');
+        wrap.className = 'pp-chip-wrap';
+        wrap.innerHTML =
+          '<input type="checkbox" class="pp-feature-cb" id="' + id + '" value="' + f.label + '">' +
+          '<label class="chip" for="' + id + '">' + f.emoji + ' ' + f.label + '</label>';
+        grid.appendChild(wrap);
+      });
+    }
+
+    // ── Map ───────────────────────────────────────────────────────────────────
+    function loadMap() {
+      var address = document.getElementById('address-input').value.trim();
+      if (!address) {
+        showError('map-error', 'Please enter your property address first.');
+        return;
+      }
+      currentAddress = address;
+      hideError('map-error');
+
+      var btn = document.getElementById('load-map-btn');
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+
+      geocoder.geocode({ address: address }, function(results, status) {
+        btn.disabled = false;
+        btn.textContent = 'Load My Property';
+
+        if (status !== 'OK' || !results || !results[0]) {
+          showError(
+            'map-error',
+            "Couldn’t locate that address. Try adding a city and state, or use a full street address."
+          );
+          return;
+        }
+
+        var location = results[0].geometry.location;
+
+        // Show map div, hide placeholder
+        document.getElementById('map-placeholder').style.display = 'none';
+        var mapDiv = document.getElementById('map-div');
+        mapDiv.style.display = 'block';
+
+        if (!map) {
+          map = new google.maps.Map(mapDiv, {
+            center: location,
+            zoom: 17,
+            mapTypeId: google.maps.MapTypeId.SATELLITE,
+            tilt: 0,
+          });
+        } else {
+          map.setCenter(location);
+          map.setZoom(17);
+          map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+        }
+      });
+    }
+
+    // ── Generate Plan ─────────────────────────────────────────────────────────
+    function generatePlan() {
+      var selected = Array.prototype.slice.call(
+        document.querySelectorAll('.pp-feature-cb:checked')
+      ).map(function(cb) { return cb.value; });
+
+      var custom  = document.getElementById('custom-features').value.trim();
+      var acreage = document.getElementById('acreage').value.trim();
+      var notes   = document.getElementById('land-notes').value.trim();
+
+      // Validate
+      if (selected.length === 0 && !custom) {
+        showError('features-error', 'Please select at least one homestead feature before generating a plan.');
+        return;
+      }
+      hideError('features-error');
+      hideError('worker-error');
+
+      // Merge selected + custom features
+      var allFeatures = selected.slice();
+      if (custom) {
+        custom.split(',').forEach(function(f) {
+          var trimmed = f.trim();
+          if (trimmed) allFeatures.push(trimmed);
+        });
+      }
+
+      // Check for placeholder worker URL
+      if (WORKER_URL === 'YOUR_WORKER_URL_HERE') {
+        showError('worker-error', 'No Cloudflare Worker URL is configured. Please set WORKER_URL in property-planner.html.');
+        return;
+      }
+
+      var content =
+        'You are an expert homestead and agritourism layout planner. ' +
+        'Based on the property details below, provide: ' +
+        '1) A recommended spatial layout explaining where each feature should go and why, ' +
+        'considering sun exposure, visitor flow, safety, accessibility, and aesthetics. ' +
+        '2) A suggested visitor path through the property. ' +
+        '3) Any warnings or considerations about drainage, slope, animal proximity to food areas, ' +
+        'or zoning to keep in mind. ' +
+        'Be specific and practical. Use clear section headers.\n\n' +
+        'Property details:\n' +
+        'Address: ' + (currentAddress || 'Not specified') + '\n' +
+        'Property Size: ' + (acreage ? acreage + ' acres' : 'Not specified') + '\n' +
+        'Selected Features: ' + allFeatures.join(', ') + '\n' +
+        (notes ? 'Land Notes: ' + notes : '');
+
+      setGenerating(true);
+
+      fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          messages: [{ role: 'user', content: content }]
+        })
+      })
+        .then(function(res) {
+          if (!res.ok) throw new Error('Worker responded with status ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          var text =
+            (data && data.content && data.content[0] && data.content[0].text) ||
+            (data && data.completion) ||
+            (data && data.message && data.message.content && data.message.content[0] && data.message.content[0].text) ||
+            null;
+          if (!text) throw new Error('Empty response from worker');
+          rawPlanText = text;
+          showResults(text);
+        })
+        .catch(function(err) {
+          console.error('Layout plan error:', err);
+          showError('worker-error', 'Something went wrong generating your plan. Please try again.');
+        })
+        .finally(function() {
+          setGenerating(false);
+        });
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────────────────
+    function setGenerating(on) {
+      var btn = document.getElementById('generate-btn');
+      if (on) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="pp-spinner"></span>Analyzing your property…';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Generate My Layout Plan';
+      }
+    }
+
+    function showResults(text) {
+      document.getElementById('results-content').innerHTML = renderMarkdown(text);
+      var panel = document.getElementById('results-panel');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function copyPlan() {
+      if (!rawPlanText) return;
+      navigator.clipboard.writeText(rawPlanText).then(function() {
+        var btn = document.getElementById('copy-btn');
+        var orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = orig; }, 2000);
+      }).catch(function() {
+        // Fallback for browsers without clipboard API
+        var ta = document.createElement('textarea');
+        ta.value = rawPlanText;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        var btn = document.getElementById('copy-btn');
+        var orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = orig; }, 2000);
+      });
+    }
+
+    function resetAll() {
+      currentAddress = '';
+      rawPlanText = '';
+
+      // Reset address & map
+      document.getElementById('address-input').value = '';
+      document.getElementById('map-placeholder').style.display = 'flex';
+      document.getElementById('map-div').style.display = 'none';
+
+      // Reset features
+      document.querySelectorAll('.pp-feature-cb').forEach(function(cb) { cb.checked = false; });
+      document.getElementById('custom-features').value = '';
+      document.getElementById('acreage').value = '';
+      document.getElementById('land-notes').value = '';
+
+      // Reset results
+      document.getElementById('results-panel').style.display = 'none';
+      document.getElementById('results-content').innerHTML = '';
+
+      // Hide all errors
+      hideError('map-error');
+      hideError('features-error');
+      hideError('worker-error');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(id, msg) {
+      var el = document.getElementById(id);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideError(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    // ── Markdown renderer ─────────────────────────────────────────────────────
+    function renderMarkdown(text) {
+      var lines = text.split('\n');
+      var html = '';
+      var inUL = false;
+      var inOL = false;
+
+      function closeLists() {
+        if (inUL) { html += '</ul>'; inUL = false; }
+        if (inOL) { html += '</ol>'; inOL = false; }
+      }
+
+      function esc(s) {
+        return s
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*]+?)\*/g, '<em>$1</em>');
+      }
+
+      lines.forEach(function(raw) {
+        var h2  = raw.match(/^##\s+(.*)/);
+        var h3  = raw.match(/^###\s+(.*)/);
+        var ul  = raw.match(/^[-*]\s+(.*)/);
+        var ol  = raw.match(/^\d+\.\s+(.*)/);
+        var blank = raw.trim() === '';
+
+        if (h3) {
+          closeLists();
+          html += '<h3>' + esc(h3[1]) + '</h3>';
+        } else if (h2) {
+          closeLists();
+          html += '<h2>' + esc(h2[1]) + '</h2>';
+        } else if (ul) {
+          if (inOL) { html += '</ol>'; inOL = false; }
+          if (!inUL) { html += '<ul>'; inUL = true; }
+          html += '<li>' + esc(ul[1]) + '</li>';
+        } else if (ol) {
+          if (inUL) { html += '</ul>'; inUL = false; }
+          if (!inOL) { html += '<ol>'; inOL = true; }
+          html += '<li>' + esc(ol[1]) + '</li>';
+        } else if (blank) {
+          closeLists();
+        } else {
+          closeLists();
+          html += '<p>' + esc(raw) + '</p>';
+        }
+      });
+
+      closeLists();
+      return html;
+    }
+  </script>
+</body>
+</html>

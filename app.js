@@ -3222,23 +3222,28 @@ function AnimalCareCalendar() {
 // ============= TOOLS REGISTRY =============
 
 const TOOLS = [
-  { id: "planner",          icon: "🌱", category: "Planning",   name: "Homestead Planner",        desc: "Generate a custom plan for your land — animals, vegetables, costs, and more.",                      status: "live" },
-  { id: "preservation",     icon: "🫙", category: "Planning",   name: "Food Preservation Planner", desc: "Build a canning, freezing, and fermenting schedule around your harvest.",                           status: "soon" },
-  { id: "animal-calendar",  icon: "📅", category: "Planning",   name: "Animal Care Calendar",      desc: "Monthly tasks and reminders tailored to each species on your property.",                           status: "live" },
-  { id: "bed-designer",     icon: "🗺️", category: "Planning",   name: "Garden Bed Designer",       desc: "Visually design and lay out your garden beds with drag-and-drop.",                                 status: "soon" },
-  { id: "crop-rotation",    icon: "🔄", category: "Planning",   name: "Crop Rotation Planner",     desc: "Plan year-by-year bed rotation to maintain soil health and reduce pests.",                         status: "soon" },
-  { id: "break-even",       icon: "📊", category: "Financial",  name: "Break-Even Calculator",     desc: "Find out when your homestead investment starts paying for itself.",                                 status: "live" },
-  { id: "budget",           icon: "💰", category: "Financial",  name: "Budget Tracker",            desc: "Track income vs. expenses across your whole homestead operation.",                                  status: "soon" },
-  { id: "pricing",          icon: "🏷️", category: "Financial",  name: "Produce Pricing",           desc: "Calculate what to charge at the farmers market to cover costs and profit.",                        status: "soon" },
+  { id: "planner",           icon: "🌱", category: "Planning",   name: "Homestead Planner",         desc: "Generate a custom plan for your land — animals, vegetables, costs, and more.",                              status: "live" },
+  { id: "property-planner",  icon: "📍", category: "Planning",   name: "Property Layout Planner",   desc: "Load your land on satellite view and get an AI-powered layout for your homestead features.",               status: "live", external: "property-planner.html" },
+  { id: "preservation",      icon: "🫙", category: "Planning",   name: "Food Preservation Planner", desc: "Build a canning, freezing, and fermenting schedule around your harvest.",                                   status: "soon" },
+  { id: "animal-calendar",   icon: "📅", category: "Planning",   name: "Animal Care Calendar",      desc: "Monthly tasks and reminders tailored to each species on your property.",                                   status: "live" },
+  { id: "bed-designer",      icon: "🗺️", category: "Planning",   name: "Garden Bed Designer",       desc: "Visually design and lay out your garden beds with drag-and-drop.",                                         status: "soon" },
+  { id: "crop-rotation",     icon: "🔄", category: "Planning",   name: "Crop Rotation Planner",     desc: "Plan year-by-year bed rotation to maintain soil health and reduce pests.",                                 status: "soon" },
+  { id: "break-even",        icon: "📊", category: "Financial",  name: "Break-Even Calculator",     desc: "Find out when your homestead investment starts paying for itself.",                                         status: "live" },
+  { id: "budget",            icon: "💰", category: "Financial",  name: "Budget Tracker",            desc: "Track income vs. expenses across your whole homestead operation.",                                          status: "soon" },
+  { id: "pricing",           icon: "🏷️", category: "Financial",  name: "Produce Pricing",           desc: "Calculate what to charge at the farmers market to cover costs and profit.",                                status: "soon" },
 ];
 
 // ============= HOMEPAGE =============
 
 function ToolCard({ tool, onSelect }) {
+  function handleClick() {
+    if (tool.status !== "live") return;
+    if (tool.external) { window.location.href = tool.external; } else { onSelect(tool.id); }
+  }
   return (
     <div
       className={`tool-card${tool.status === "soon" ? " tool-card--soon" : ""}`}
-      onClick={() => tool.status === "live" && onSelect(tool.id)}
+      onClick={handleClick}
       role={tool.status === "live" ? "button" : undefined}
     >
       <span className={`tool-card-badge tool-card-badge--${tool.status === "live" ? "live" : "soon"}`}>
